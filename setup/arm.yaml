@@ -374,3 +374,44 @@ JSON_URL: ""
 # File location of your apprise.yaml file
 # Leave blank to disable
 APPRISE: ""
+
+
+#################################################
+##            AI CONFIGURATION                 ##
+#################################################
+
+# AI Agent API key (required for AI features)
+# Supports OpenAI-compatible APIs (OpenAI, Ollama, LM Studio, etc.)
+AI_API_KEY: ""
+
+# AI API endpoint URL (default: OpenAI)
+# AI_API_URL: "https://api.openai.com/v1/chat/completions"
+
+# AI model to use (default: gpt-4o-mini)
+# AI_MODEL: "gpt-4o-mini"
+
+
+#################################################
+##            MCP APPS CONFIGURATION           ##
+#################################################
+
+# External MCP tool servers that ARM connects to as a client.
+# Each app is launched as a child process using stdio transport.
+#
+# Supported fields per app:
+#   name:    Display name for the app
+#   command: Executable to launch the MCP server
+#   args:    Command line arguments (array)
+#   env:     Environment variables to pass to the child process (object)
+#
+# Example: OMDB movie database server for enhanced metadata lookup
+# Requires an OMDB API key from https://omdbapi.com/apikey.aspx
+# The OMDB MCP server provides: search_movies, get_movie_details, get_movie_by_imdb_id
+#
+# MCP_APPS:
+#   - name: omdb
+#     command: npx
+#     args: ["-y", "omdb-mcp-server"]
+#     env:
+#       OMDB_API_KEY: "your-omdb-api-key"
+MCP_APPS:

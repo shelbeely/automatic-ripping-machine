@@ -1,48 +1,267 @@
-body {
-  background-color: #1a1a2e;
-  color: #e0e0e0;
+/* ── ARM Theme — Hybrid MDC-Web (MD2) + Material Web (MD3) ── */
+/* MDC-Web v14.0.0 — data tables, navigation drawer, top app bar */
+/* Reference: https://github.com/material-components/material-components-web */
+/* Material Web v2.4.0 — buttons, text fields, switches, selects, dividers */
+/* Reference: https://material-web.dev/ */
+
+:root {
+  --md-sys-color-primary: #7B61FF;
+  --md-sys-color-on-primary: #FFFFFF;
+  --md-sys-color-primary-container: #3A2D6B;
+  --md-sys-color-surface: #1C1B1F;
+  --md-sys-color-surface-container: #2B2930;
+  --md-sys-color-surface-container-high: #36343B;
+  --md-sys-color-on-surface: #E6E0E9;
+  --md-sys-color-on-surface-variant: #CAC4D0;
+  --md-sys-color-secondary: #FFB4AB;
+  --md-sys-color-secondary-container: #5D3F3B;
+  --md-sys-color-tertiary: #79D1C3;
+  --md-sys-color-outline: #938F99;
+  --md-sys-color-outline-variant: #49454F;
+  --md-sys-color-error: #F2B8B5;
+  --md-sys-color-on-error: #601410;
+  --md-sys-color-success: #79D1C3;
+  --md-sys-color-warning: #FFD29F;
+  --md-sys-typescale-body-medium-font: 'Roboto', sans-serif;
+  /* MDC-Web theming via CSS custom properties */
+  --mdc-theme-primary: #7B61FF;
+  --mdc-theme-on-primary: #FFFFFF;
+  --mdc-theme-surface: #2B2930;
+  --mdc-theme-on-surface: #E6E0E9;
+  --mdc-theme-background: #1C1B1F;
+  --mdc-typography-font-family: 'Roboto', sans-serif;
 }
-.navbar {
-  background-color: #16213e !important;
+
+/* ── Body ── */
+body.dark {
+  background-color: var(--md-sys-color-surface);
+  color: var(--md-sys-color-on-surface);
+  font-family: 'Roboto', sans-serif;
+  margin: 0;
 }
-.card {
-  background-color: #0f3460;
-  border-color: #533483;
-  color: #e0e0e0;
+
+/* ── MDC Top App Bar — dark theme overrides ── */
+.mdc-top-app-bar {
+  background-color: var(--md-sys-color-surface-container) !important;
+  color: var(--md-sys-color-on-surface) !important;
 }
-.card-header {
-  background-color: #16213e;
-  border-color: #533483;
+.mdc-top-app-bar__title {
+  color: var(--md-sys-color-on-surface) !important;
 }
-.table {
-  color: #e0e0e0;
+.mdc-top-app-bar__navigation-icon,
+.mdc-top-app-bar__action-item {
+  color: var(--md-sys-color-on-surface-variant) !important;
 }
-.table-striped > tbody > tr:nth-of-type(odd) {
-  background-color: rgba(255, 255, 255, 0.05);
+.mdc-top-app-bar a {
+  color: inherit;
+  text-decoration: none;
 }
-.btn-primary {
-  background-color: #533483;
-  border-color: #533483;
+
+/* ── MDC Drawer — dark theme overrides ── */
+.mdc-drawer {
+  background-color: var(--md-sys-color-surface-container) !important;
+  border-color: var(--md-sys-color-outline-variant) !important;
 }
-.btn-primary:hover {
-  background-color: #6a42a3;
-  border-color: #6a42a3;
+.mdc-drawer__title {
+  color: var(--md-sys-color-on-surface) !important;
 }
-a { color: #e94560; }
-a:hover { color: #ff6b81; }
+.mdc-drawer__header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.mdc-drawer .mdc-list-item {
+  color: var(--md-sys-color-on-surface-variant) !important;
+  border-radius: 28px;
+  margin: 2px 12px;
+}
+.mdc-drawer .mdc-list-item__graphic {
+  color: inherit !important;
+}
+.mdc-drawer .mdc-list-item:hover {
+  background-color: var(--md-sys-color-surface-container-high);
+}
+.mdc-drawer .mdc-list-item[aria-current="page"],
+.mdc-drawer .mdc-list-item--activated {
+  background-color: var(--md-sys-color-primary-container) !important;
+  color: var(--md-sys-color-primary) !important;
+}
+.mdc-drawer .mdc-list-divider {
+  border-color: var(--md-sys-color-outline-variant) !important;
+}
+
+/* ── Page content area (accounts for drawer + app bar) ── */
+.page {
+  padding: 80px 16px 16px 16px;
+}
+@media (min-width: 993px) {
+  .page {
+    padding-left: 272px;
+  }
+}
+
+/* ── Grid system ── */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 16px;
+}
+.s12 { grid-column: span 12; }
+.s6 { grid-column: span 6; }
+@media (min-width: 600px) {
+  .m2 { grid-column: span 2; }
+  .m3 { grid-column: span 3; }
+  .m4 { grid-column: span 4; }
+  .m5 { grid-column: span 5; }
+  .m6 { grid-column: span 6; }
+  .m8 { grid-column: span 8; }
+  .m9 { grid-column: span 9; }
+  .m10 { grid-column: span 10; }
+}
+
+/* ── MDC Data Table — dark theme overrides ── */
+/* Reference: https://m2.material.io/components/data-tables/web */
+.mdc-data-table {
+  background-color: transparent !important;
+  border-color: var(--md-sys-color-outline-variant) !important;
+  border: none !important;
+  width: 100%;
+}
+.mdc-data-table__header-cell {
+  color: var(--md-sys-color-on-surface-variant) !important;
+  background-color: transparent !important;
+  border-bottom-color: var(--md-sys-color-outline-variant) !important;
+  font-weight: 500;
+}
+.mdc-data-table__cell {
+  color: var(--md-sys-color-on-surface) !important;
+  border-bottom-color: var(--md-sys-color-outline-variant) !important;
+}
+.mdc-data-table__row:hover .mdc-data-table__cell {
+  background-color: rgba(123, 97, 255, 0.08);
+}
+
+/* ── Cards (custom — not in MDC-Web or Material Web) ── */
+.md3-card {
+  background-color: var(--md-sys-color-surface-container);
+  color: var(--md-sys-color-on-surface);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: 12px;
+  padding: 16px;
+}
+
+/* ── Alerts (custom — not in MDC-Web or Material Web) ── */
+.md3-alert {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 12px;
+  margin-bottom: 8px;
+}
+.md3-alert.info {
+  background-color: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-surface);
+}
+.md3-alert.error {
+  background-color: rgba(242, 184, 181, 0.15);
+  color: var(--md-sys-color-error);
+}
+.md3-alert.success {
+  background-color: rgba(121, 209, 195, 0.15);
+  color: var(--md-sys-color-success);
+}
+
+/* ── Status chips (custom — MD3 chips from Material Web lack color variants) ── */
+.status-chip {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+.status-chip.primary {
+  background-color: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-primary);
+}
+.status-chip.error {
+  background-color: rgba(242, 184, 181, 0.15);
+  color: var(--md-sys-color-error);
+}
+.status-chip.success {
+  background-color: rgba(121, 209, 195, 0.15);
+  color: var(--md-sys-color-success);
+}
+.status-chip.warning {
+  background-color: rgba(255, 210, 159, 0.15);
+  color: var(--md-sys-color-warning);
+}
+.status-chip.secondary {
+  background-color: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-secondary);
+}
+
+/* ── Links ── */
+a {
+  color: var(--md-sys-color-secondary);
+}
+a:hover {
+  color: #FFD0CA;
+}
+
+/* ── Code / Pre blocks ── */
+pre, code {
+  background-color: var(--md-sys-color-surface-container-high);
+  color: var(--md-sys-color-on-surface);
+  border-radius: 12px;
+}
 pre {
-  background-color: #16213e;
-  color: #e0e0e0;
-  padding: 15px;
-  border-radius: 5px;
+  padding: 16px;
+  overflow-x: auto;
+  border: 1px solid var(--md-sys-color-outline-variant);
 }
-.form-control {
-  background-color: #16213e;
-  color: #e0e0e0;
-  border-color: #533483;
+
+/* ── Material Web (MD3) component theming ── */
+md-filled-button {
+  --md-filled-button-container-color: var(--md-sys-color-primary);
+  --md-filled-button-label-text-color: var(--md-sys-color-on-primary);
 }
-.form-control:focus {
-  background-color: #1a1a2e;
-  color: #e0e0e0;
-  border-color: #e94560;
+md-outlined-button {
+  --md-outlined-button-outline-color: var(--md-sys-color-outline);
+  --md-outlined-button-label-text-color: var(--md-sys-color-primary);
 }
+md-filled-tonal-button {
+  --md-filled-tonal-button-container-color: var(--md-sys-color-secondary-container);
+  --md-filled-tonal-button-label-text-color: var(--md-sys-color-secondary);
+}
+md-outlined-text-field, md-outlined-select {
+  --md-outlined-text-field-outline-color: var(--md-sys-color-outline);
+  --md-outlined-text-field-focus-outline-color: var(--md-sys-color-primary);
+  --md-outlined-text-field-input-text-color: var(--md-sys-color-on-surface);
+  --md-outlined-text-field-label-text-color: var(--md-sys-color-on-surface-variant);
+  --md-outlined-select-text-field-outline-color: var(--md-sys-color-outline);
+  --md-outlined-select-text-field-focus-outline-color: var(--md-sys-color-primary);
+  --md-outlined-select-text-field-input-text-color: var(--md-sys-color-on-surface);
+  width: 100%;
+}
+md-switch {
+  --md-switch-selected-track-color: var(--md-sys-color-primary);
+  --md-switch-selected-handle-color: var(--md-sys-color-on-primary);
+}
+md-icon-button {
+  --md-icon-button-icon-color: var(--md-sys-color-on-surface-variant);
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--md-sys-color-surface); }
+::-webkit-scrollbar-thumb {
+  background: var(--md-sys-color-outline);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--md-sys-color-on-surface-variant);
+}
+
+/* ── Utility ── */
+h5, h6 { color: var(--md-sys-color-on-surface); margin-top: 0; }

@@ -1,43 +1,55 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ARM - Notifications</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <%- include('head') %>
 </head>
-<body>
+<body class="dark">
   <%- include('nav') %>
-  <div class="container-fluid mt-3">
-    <h3>Notifications</h3>
-    <button class="btn btn-sm btn-outline-danger mb-3" onclick="clearAll()">Clear All</button>
+  <div class="page">
+    <h5>Notifications</h5>
+    <div style="margin-bottom:1rem;">
+      <md-outlined-button onclick="clearAll()">Clear All</md-outlined-button>
+    </div>
     <% if (typeof notifications !== 'undefined' && notifications.length > 0) { %>
       <% notifications.forEach(function(n) { %>
-        <div class="alert alert-<%= n.seen ? 'secondary' : 'info' %> d-flex justify-content-between align-items-center">
+        <div class="md3-card" style="margin-bottom:0.75rem;display:flex;justify-content:space-between;align-items:center;<%= !n.seen ? 'border-color:var(--md-sys-color-primary);' : '' %>">
           <div>
             <strong><%= n.title %></strong><br>
             <small><%= n.message %></small><br>
-            <small class="text-muted"><%= new Date(n.trigger_time).toLocaleString() %></small>
+            <small><%= new Date(n.trigger_time).toLocaleString() %></small>
           </div>
           <% if (!n.seen) { %>
-            <button class="btn btn-sm btn-outline-primary" onclick="markRead(<%= n.id %>)">Mark Read</button>
+            <md-outlined-button onclick="markRead(<%= n.id %>)">Mark Read</md-outlined-button>
           <% } %>
         </div>
       <% }); %>
     <% } else { %>
-      <div class="alert alert-info">No notifications</div>
+      <div class="md3-alert info">
+        <i class="material-icons-outlined">info</i>
+        <span>No notifications</span>
+      </div>
     <% } %>
+    <script>
+      function markRead(id) {
+        fetch('/notification/read/' + id, { method: 'POST' })
+          .then(r => r.json()).then(d => { if (d.success) location.reload(); });
+      }
+      function clearAll() {
+        fetch('/notification/clear', { method: 'POST' })
+          .then(r => r.json()).then(d => { if (d.success) location.reload(); });
+      }
+    </script>
   </div>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  </div>
   <script>
-    function markRead(id) {
-      fetch('/notification/read/' + id, { method: 'POST' })
-        .then(r => r.json()).then(d => { if (d.success) location.reload(); });
-    }
-    function clearAll() {
-      fetch('/notification/clear', { method: 'POST' })
-        .then(r => r.json()).then(d => { if (d.success) location.reload(); });
-    }
+    var drawer = mdc.drawer.MDCDrawer.attachTo(document.querySelector('.mdc-drawer'));
+    var topAppBar = mdc.topAppBar.MDCTopAppBar.attachTo(document.querySelector('.mdc-top-app-bar'));
+    topAppBar.setScrollTarget(document.querySelector('.page'));
+    topAppBar.listen('MDCTopAppBar:nav', function() {
+      drawer.open = !drawer.open;
+    });
+    if (window.innerWidth >= 993) drawer.open = true;
   </script>
 </body>
 </html>

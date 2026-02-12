@@ -29,6 +29,12 @@ class User {
     return bcrypt.hash(password, 12);
   }
 
+  static async count() {
+    const db = getDatabase();
+    const result = await db('user').count('* as count').first();
+    return result ? result.count : 0;
+  }
+
   async save() {
     const db = getDatabase();
     const data = {

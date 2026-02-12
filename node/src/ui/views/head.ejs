@@ -1,0 +1,26 @@
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- Roboto font -->
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<!-- Material Icons -->
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+<!-- MDC-Web v14.0.0 (MD2) — data tables, navigation drawer, top app bar -->
+<!-- Reference: https://github.com/material-components/material-components-web -->
+<link href="https://unpkg.com/material-components-web@14.0.0/dist/material-components-web.min.css" rel="stylesheet">
+<script src="https://unpkg.com/material-components-web@14.0.0/dist/material-components-web.min.js"></script>
+<!-- Material Web v2.4.0 (MD3) — buttons, text fields, switches, selects, dividers -->
+<!-- Reference: https://material-web.dev/ -->
+<script type="importmap">
+{
+  "imports": {
+    "@material/web/": "https://esm.run/@material/web@2.4.0/"
+  }
+}
+</script>
+<script type="module">
+  import '@material/web/all.js';
+  import {styles as typescaleStyles} from '@material/web/typography/md-typescale-styles.js';
+  document.adoptedStyleSheets.push(typescaleStyles.styleSheet);
+</script>
+<!-- ARM theme -->
+<link rel="stylesheet" href="/static/css/style.css">

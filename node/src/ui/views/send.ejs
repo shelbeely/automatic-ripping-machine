@@ -1,17 +1,57 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ARM - Send Media</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <%- include('head') %>
 </head>
-<body>
+<body class="dark">
   <%- include('nav') %>
-  <div class="container-fluid mt-3">
-    <h3>Send Media</h3>
-    <div class="alert alert-info">Media distribution feature - configure in settings.</div>
+  <div class="page">
+    <h5>Completed Media</h5>
+    <p><i class="material-icons-outlined" style="vertical-align:middle;">folder</i> <code><%= typeof completedPath !== 'undefined' ? completedPath : '' %></code></p>
+    <% if (typeof files !== 'undefined' && files.length > 0) { %>
+      <div class="md3-card" style="overflow-x:auto;">
+        <div class="mdc-data-table">
+          <div class="mdc-data-table__table-container">
+            <table class="mdc-data-table__table" aria-label="Completed media">
+              <thead>
+                <tr class="mdc-data-table__header-row">
+                  <th class="mdc-data-table__header-cell" role="columnheader" scope="col">Folder</th>
+                  <th class="mdc-data-table__header-cell" role="columnheader" scope="col">Filename</th>
+                  <th class="mdc-data-table__header-cell" role="columnheader" scope="col">Size</th>
+                  <th class="mdc-data-table__header-cell" role="columnheader" scope="col">Modified</th>
+                </tr>
+              </thead>
+              <tbody class="mdc-data-table__content">
+                <% files.forEach(function(file) { %>
+                  <tr class="mdc-data-table__row">
+                    <td class="mdc-data-table__cell"><%= file.folder || '—' %></td>
+                    <td class="mdc-data-table__cell"><%= file.name %></td>
+                    <td class="mdc-data-table__cell"><%= file.size %></td>
+                    <td class="mdc-data-table__cell"><%= new Date(file.modified).toLocaleString() %></td>
+                  </tr>
+                <% }); %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    <% } else { %>
+      <div class="md3-alert info">
+        <i class="material-icons-outlined">info</i>
+        <span>No completed media files found.</span>
+      </div>
+    <% } %>
   </div>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  </div>
+  <script>
+    var drawer = mdc.drawer.MDCDrawer.attachTo(document.querySelector('.mdc-drawer'));
+    var topAppBar = mdc.topAppBar.MDCTopAppBar.attachTo(document.querySelector('.mdc-top-app-bar'));
+    topAppBar.setScrollTarget(document.querySelector('.page'));
+    topAppBar.listen('MDCTopAppBar:nav', function() {
+      drawer.open = !drawer.open;
+    });
+    if (window.innerWidth >= 993) drawer.open = true;
+  </script>
 </body>
 </html>

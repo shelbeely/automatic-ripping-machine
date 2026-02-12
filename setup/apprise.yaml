@@ -85,7 +85,7 @@ MSTEAMS_TOKENC: ""
 
 ## NEXTCLOUD SETTINGS
 ## All of these are required || leave NEXTCLOUD_HOST blank to disable
-## TODO: This might need  X-Token headers set. Append "?-X-Token=key" to utils.py
+## Nextcloud may need X-Token headers. Configure in notification settings.
 NEXTCLOUD_HOST: ""
 NEXTCLOUD_ADMINUSER: ""
 NEXTCLOUD_ADMINPASS: ""

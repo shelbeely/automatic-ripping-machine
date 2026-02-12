@@ -1,59 +1,74 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><%= typeof title !== 'undefined' ? title : 'ARM' %></title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-  <link rel="stylesheet" href="/static/css/style.css">
+  <%- include('head') %>
 </head>
-<body>
+<body class="dark">
   <%- include('nav') %>
-  <div class="container-fluid mt-3">
-    <h2>Automatic Ripping Machine</h2>
-    <div class="row mt-3">
-      <div class="col-md-8">
-        <div class="card">
-          <div class="card-header"><h5>Active Jobs</h5></div>
-          <div class="card-body">
-            <% if (typeof jobs !== 'undefined' && jobs.length > 0) { %>
-              <table class="table table-striped">
-                <thead>
-                  <tr><th>ID</th><th>Title</th><th>Type</th><th>Status</th><th>Progress</th><th>Started</th><th>Actions</th></tr>
-                </thead>
-                <tbody>
-                  <% jobs.forEach(function(job) { %>
-                    <tr>
-                      <td><a href="/jobdetail?job_id=<%= job.job_id %>"><%= job.job_id %></a></td>
-                      <td><%= job.title || 'Unknown' %></td>
-                      <td><%= job.disctype %></td>
-                      <td><span class="badge bg-<%= job.status === 'ripping' ? 'primary' : (job.status === 'transcoding' ? 'warning' : 'info') %>"><%= job.status %></span></td>
-                      <td><%= job.progress || 'N/A' %></td>
-                      <td><%= new Date(job.start_time).toLocaleString() %></td>
-                      <td><a href="/jobdetail?job_id=<%= job.job_id %>" class="btn btn-sm btn-outline-primary">Details</a></td>
+  <div class="page">
+    <h5>Automatic Ripping Machine</h5>
+    <div class="grid">
+      <div class="s12 m8">
+        <div class="md3-card">
+          <h6 class="md-typescale-title-medium">Active Jobs</h6>
+          <% if (typeof jobs !== 'undefined' && jobs.length > 0) { %>
+            <div class="mdc-data-table">
+              <div class="mdc-data-table__table-container">
+                <table class="mdc-data-table__table" aria-label="Active jobs">
+                  <thead>
+                    <tr class="mdc-data-table__header-row">
+                      <th class="mdc-data-table__header-cell" role="columnheader" scope="col">ID</th>
+                      <th class="mdc-data-table__header-cell" role="columnheader" scope="col">Title</th>
+                      <th class="mdc-data-table__header-cell" role="columnheader" scope="col">Type</th>
+                      <th class="mdc-data-table__header-cell" role="columnheader" scope="col">Status</th>
+                      <th class="mdc-data-table__header-cell" role="columnheader" scope="col">Progress</th>
+                      <th class="mdc-data-table__header-cell" role="columnheader" scope="col">Started</th>
+                      <th class="mdc-data-table__header-cell" role="columnheader" scope="col">Actions</th>
                     </tr>
-                  <% }); %>
-                </tbody>
-              </table>
-            <% } else { %>
-              <p class="text-muted">No active jobs</p>
-            <% } %>
-          </div>
+                  </thead>
+                  <tbody class="mdc-data-table__content">
+                    <% jobs.forEach(function(job) { %>
+                      <tr class="mdc-data-table__row">
+                        <td class="mdc-data-table__cell"><a href="/jobdetail?job_id=<%= job.job_id %>"><%= job.job_id %></a></td>
+                        <td class="mdc-data-table__cell"><%= job.title || 'Unknown' %></td>
+                        <td class="mdc-data-table__cell"><%= job.disctype %></td>
+                        <td class="mdc-data-table__cell"><span class="status-chip <%= job.status === 'ripping' ? 'primary' : (job.status === 'transcoding' ? 'secondary' : 'success') %>"><%= job.status %></span></td>
+                        <td class="mdc-data-table__cell"><%= job.progress || 'N/A' %></td>
+                        <td class="mdc-data-table__cell"><%= new Date(job.start_time).toLocaleString() %></td>
+                        <td class="mdc-data-table__cell"><a href="/jobdetail?job_id=<%= job.job_id %>"><md-outlined-button>Details</md-outlined-button></a></td>
+                      </tr>
+                    <% }); %>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          <% } else { %>
+            <p>No active jobs</p>
+          <% } %>
         </div>
       </div>
-      <div class="col-md-4">
-        <div class="card">
-          <div class="card-header"><h5>System Info</h5></div>
-          <div class="card-body">
-            <% if (typeof systemInfo !== 'undefined') { %>
-              <p><strong>CPU:</strong> <%= systemInfo.cpu || 'Unknown' %></p>
-              <p><strong>Memory:</strong> <%= systemInfo.mem_total || 0 %> GB</p>
-            <% } %>
-          </div>
+      <div class="s12 m4">
+        <div class="md3-card">
+          <h6 class="md-typescale-title-medium">System Info</h6>
+          <% if (typeof systemInfo !== 'undefined') { %>
+            <p><strong>CPU:</strong> <%= systemInfo.cpu || 'Unknown' %></p>
+            <p><strong>Memory:</strong> <%= systemInfo.mem_total || 0 %> GB</p>
+          <% } %>
         </div>
       </div>
     </div>
   </div>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  </div>
+  <script src="/static/js/app.js"></script>
+  <script>
+    var drawer = mdc.drawer.MDCDrawer.attachTo(document.querySelector('.mdc-drawer'));
+    var topAppBar = mdc.topAppBar.MDCTopAppBar.attachTo(document.querySelector('.mdc-top-app-bar'));
+    topAppBar.setScrollTarget(document.querySelector('.page'));
+    topAppBar.listen('MDCTopAppBar:nav', function() {
+      drawer.open = !drawer.open;
+    });
+    if (window.innerWidth >= 993) drawer.open = true;
+  </script>
 </body>
 </html>

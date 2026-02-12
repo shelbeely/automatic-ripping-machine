@@ -2,6 +2,7 @@ const {
   parseMcpAppsConfig,
   hasMcpAppsConfigured,
   listAllTools,
+  listAllResources,
   getConnectedCount,
   findTool,
 } = require('../src/mcp/mcp_client');
@@ -62,6 +63,26 @@ describe('MCP Client', () => {
       const result = parseMcpAppsConfig(null);
       expect(result).toEqual([]);
     });
+
+    test('should preserve env field in app config', () => {
+      const config = {
+        MCP_APPS: [
+          { name: 'omdb', command: 'npx', args: ['-y', 'omdb-mcp-server'], env: { OMDB_API_KEY: 'test-key' } },
+        ],
+      };
+      const result = parseMcpAppsConfig(config);
+      expect(result).toHaveLength(1);
+      expect(result[0].env).toEqual({ OMDB_API_KEY: 'test-key' });
+    });
+
+    test('should preserve env from environment variable JSON', () => {
+      process.env.ARM_MCP_APPS = JSON.stringify([
+        { name: 'omdb', command: 'npx', args: ['-y', 'omdb-mcp-server'], env: { OMDB_API_KEY: 'env-key' } },
+      ]);
+      const result = parseMcpAppsConfig({});
+      expect(result).toHaveLength(1);
+      expect(result[0].env).toEqual({ OMDB_API_KEY: 'env-key' });
+    });
   });
 
   describe('hasMcpAppsConfigured', () => {
@@ -81,6 +102,13 @@ describe('MCP Client', () => {
     });
   });
 
+  describe('listAllResources', () => {
+    test('should return empty array when no apps connected', async () => {
+      const resources = await listAllResources();
+      expect(resources).toEqual([]);
+    });
+  });
+
   describe('getConnectedCount', () => {
     test('should return 0 when no apps connected', () => {
       expect(getConnectedCount()).toBe(0);
@@ -90,6 +118,10 @@ describe('MCP Client', () => {
   describe('findTool', () => {
     test('should return null when no apps connected', () => {
       expect(findTool('some-tool')).toBeNull();
+    });
+
+    test('should return null for get_movie_details when no MCP apps connected', () => {
+      expect(findTool('get_movie_details')).toBeNull();
     });
   });
 });

@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title><%= typeof title !== 'undefined' ? title : 'ARM - AI Dashboard' %></title>
+  <%- include('head') %>
+</head>
+<body class="dark">
+  <%- include('nav') %>
+  <div class="page">
+    <h5>AI Dashboard</h5>
+    <p>
+      ARM uses AI to enhance disc identification, optimize transcode settings, diagnose errors, generate
+      media-library filenames, and fetch structured metadata for MKV tagging.
+    </p>
+
+    <div class="grid">
+      <div class="s12 m4">
+        <div class="md3-card" style="text-align:center;">
+          <h6 class="md-typescale-title-medium">AI Status</h6>
+          <p style="font-size:1.5rem;"><span class="status-chip <%= aiConfigured ? 'success' : 'error' %>"><%= aiConfigured ? 'Active' : 'Not Configured' %></span></p>
+          <% if (!aiConfigured) { %>
+            <small>Set <code>AI_API_KEY</code> in arm.yaml</small>
+          <% } %>
+        </div>
+      </div>
+      <div class="s12 m4">
+        <div class="md3-card" style="text-align:center;">
+          <h6 class="md-typescale-title-medium">Model</h6>
+          <p style="font-size:1.25rem;"><%= aiModel %></p>
+        </div>
+      </div>
+      <div class="s12 m4">
+        <div class="md3-card" style="text-align:center;">
+          <h6 class="md-typescale-title-medium">Capabilities</h6>
+          <p style="font-size:1.5rem;">5</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI Capabilities -->
+    <div class="md3-card" style="margin-top:1rem;">
+      <h6 class="md-typescale-title-medium">AI Capabilities</h6>
+      <div class="mdc-data-table">
+        <div class="mdc-data-table__table-container">
+          <table class="mdc-data-table__table" aria-label="AI capabilities">
+            <thead>
+              <tr class="mdc-data-table__header-row">
+                <th class="mdc-data-table__header-cell" role="columnheader" scope="col">Capability</th>
+                <th class="mdc-data-table__header-cell" role="columnheader" scope="col">Description</th>
+                <th class="mdc-data-table__header-cell" role="columnheader" scope="col">API Endpoint</th>
+                <th class="mdc-data-table__header-cell" role="columnheader" scope="col">Try</th>
+              </tr>
+            </thead>
+            <tbody class="mdc-data-table__content">
+              <tr class="mdc-data-table__row">
+                <td class="mdc-data-table__cell"><strong>Disc Identification</strong></td>
+                <td class="mdc-data-table__cell">Parse disc labels to identify movie/TV show titles, years, and types</td>
+                <td class="mdc-data-table__cell"><code>POST /api/ai/identify</code></td>
+                <td class="mdc-data-table__cell"><md-outlined-button onclick="toggleTry('tryIdentify')">Try</md-outlined-button></td>
+              </tr>
+              <tr class="mdc-data-table__row" id="tryIdentify" style="display:none;">
+                <td class="mdc-data-table__cell" colspan="4">
+                  <div class="grid" style="padding:0.5rem;">
+                    <div class="s12 m8">
+                      <md-outlined-text-field label="Disc label (e.g., STAR_WARS_EP_IV)" id="identifyLabel" style="width:100%;"></md-outlined-text-field>
+                    </div>
+                    <div class="s12 m2">
+                      <md-outlined-select id="identifyDisctype" style="width:100%;">
+                        <md-select-option value="unknown"><div slot="headline">Unknown</div></md-select-option>
+                        <md-select-option value="dvd"><div slot="headline">DVD</div></md-select-option>
+                        <md-select-option value="bluray"><div slot="headline">Blu-ray</div></md-select-option>
+                      </md-outlined-select>
+                    </div>
+                    <div class="s12 m2">
+                      <md-filled-button style="width:100%;" onclick="tryIdentify()">Call</md-filled-button>
+                    </div>
+                  </div>
+                  <div id="identifyResult" style="display:none;"><pre></pre></div>
+                </td>
+              </tr>
+              <tr class="mdc-data-table__row">
+                <td class="mdc-data-table__cell"><strong>Transcode Optimization</strong></td>
+                <td class="mdc-data-table__cell">Recommend optimal transcode settings based on video properties and disc type</td>
+                <td class="mdc-data-table__cell"><code>POST /api/ai/transcode</code></td>
+                <td class="mdc-data-table__cell"><md-outlined-button onclick="toggleTry('tryTranscode')">Try</md-outlined-button></td>
+              </tr>
+              <tr class="mdc-data-table__row" id="tryTranscode" style="display:none;">
+                <td class="mdc-data-table__cell" colspan="4">
+                  <div class="grid" style="padding:0.5rem;">
+                    <div class="s12 m10">
+                      <md-outlined-text-field label="Video info JSON" id="transcodeInfo" style="width:100%;"></md-outlined-text-field>
+                    </div>
+                    <div class="s12 m2">
+                      <md-filled-button style="width:100%;" onclick="tryTranscode()">Call</md-filled-button>
+                    </div>
+                  </div>
+                  <div id="transcodeResult" style="display:none;"><pre></pre></div>
+                </td>
+              </tr>
+              <tr class="mdc-data-table__row">
+                <td class="mdc-data-table__cell"><strong>Error Diagnosis</strong></td>
+                <td class="mdc-data-table__cell">Analyze ripping/transcoding errors and provide actionable troubleshooting steps</td>
+                <td class="mdc-data-table__cell"><code>POST /api/ai/diagnose</code></td>
+                <td class="mdc-data-table__cell"><md-outlined-button onclick="toggleTry('tryDiagnose')">Try</md-outlined-button></td>
+              </tr>
+              <tr class="mdc-data-table__row" id="tryDiagnose" style="display:none;">
+                <td class="mdc-data-table__cell" colspan="4">
+                  <div class="grid" style="padding:0.5rem;">
+                    <div class="s12 m10">
+                      <md-outlined-text-field type="textarea" label="Paste error log here..." id="diagnoseLog" rows="2" style="width:100%;"></md-outlined-text-field>
+                    </div>
+                    <div class="s12 m2">
+                      <md-filled-button style="width:100%;" onclick="tryDiagnose()">Call</md-filled-button>
+                    </div>
+                  </div>
+                  <div id="diagnoseResult" style="display:none;"><pre></pre></div>
+                </td>
+              </tr>
+              <tr class="mdc-data-table__row">
+                <td class="mdc-data-table__cell"><strong>Filename Generation</strong></td>
+                <td class="mdc-data-table__cell">Generate Plex/Emby/Jellyfin-compatible filenames and directory structures</td>
+                <td class="mdc-data-table__cell"><code>POST /api/ai/filename</code></td>
+                <td class="mdc-data-table__cell"><md-outlined-button onclick="toggleTry('tryFilename')">Try</md-outlined-button></td>
+              </tr>
+              <tr class="mdc-data-table__row" id="tryFilename" style="display:none;">
+                <td class="mdc-data-table__cell" colspan="4">
+                  <div class="grid" style="padding:0.5rem;">
+                    <div class="s12 m5">
+                      <md-outlined-text-field label="Movie title" id="filenameTitle" style="width:100%;"></md-outlined-text-field>
+                    </div>
+                    <div class="s12 m2">
+                      <md-outlined-text-field label="Year" id="filenameYear" style="width:100%;"></md-outlined-text-field>
+                    </div>
+                    <div class="s12 m3">
+                      <md-outlined-select id="filenameType" style="width:100%;">
+                        <md-select-option value="movie"><div slot="headline">Movie</div></md-select-option>
+                        <md-select-option value="series"><div slot="headline">Series</div></md-select-option>
+                      </md-outlined-select>
+                    </div>
+                    <div class="s12 m2">
+                      <md-filled-button style="width:100%;" onclick="tryFilename()">Call</md-filled-button>
+                    </div>
+                  </div>
+                  <div id="filenameResult" style="display:none;"><pre></pre></div>
+                </td>
+              </tr>
+              <tr class="mdc-data-table__row">
+                <td class="mdc-data-table__cell"><strong>Credits &amp; Metadata</strong></td>
+                <td class="mdc-data-table__cell">Fetch structured credits (cast, crew, synopsis, genre, ratings) for MKV tagging</td>
+                <td class="mdc-data-table__cell"><code>POST /api/ai/credits</code></td>
+                <td class="mdc-data-table__cell"><md-outlined-button onclick="toggleTry('tryCredits')">Try</md-outlined-button></td>
+              </tr>
+              <tr class="mdc-data-table__row" id="tryCredits" style="display:none;">
+                <td class="mdc-data-table__cell" colspan="4">
+                  <div class="grid" style="padding:0.5rem;">
+                    <div class="s12 m5">
+                      <md-outlined-text-field label="Movie title" id="creditsTitle" style="width:100%;"></md-outlined-text-field>
+                    </div>
+                    <div class="s12 m2">
+                      <md-outlined-text-field label="Year" id="creditsYear" style="width:100%;"></md-outlined-text-field>
+                    </div>
+                    <div class="s12 m3">
+                      <md-outlined-select id="creditsType" style="width:100%;">
+                        <md-select-option value="movie"><div slot="headline">Movie</div></md-select-option>
+                        <md-select-option value="series"><div slot="headline">Series</div></md-select-option>
+                      </md-outlined-select>
+                    </div>
+                    <div class="s12 m2">
+                      <md-filled-button style="width:100%;" onclick="tryCredits()">Call</md-filled-button>
+                    </div>
+                  </div>
+                  <div id="creditsResult" style="display:none;"><pre></pre></div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI Configuration -->
+    <div class="md3-card" style="margin-top:1rem;">
+      <h6 class="md-typescale-title-medium">AI Configuration</h6>
+      <div class="mdc-data-table">
+        <div class="mdc-data-table__table-container">
+          <table class="mdc-data-table__table" aria-label="AI configuration">
+            <tbody class="mdc-data-table__content">
+              <tr class="mdc-data-table__row">
+                <td class="mdc-data-table__cell"><strong>API URL</strong></td>
+                <td class="mdc-data-table__cell"><code><%= aiUrl %></code></td>
+              </tr>
+              <tr class="mdc-data-table__row">
+                <td class="mdc-data-table__cell"><strong>Model</strong></td>
+                <td class="mdc-data-table__cell"><code><%= aiModel %></code></td>
+              </tr>
+              <tr class="mdc-data-table__row">
+                <td class="mdc-data-table__cell"><strong>API Key</strong></td>
+                <td class="mdc-data-table__cell"><code><%= aiConfigured ? '••••••••' + aiKeyHint : 'Not set' %></code></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <small>Configure via <code>AI_API_KEY</code>, <code>AI_API_URL</code>, and <code>AI_MODEL</code> in <code>arm.yaml</code> or environment variables (<code>ARM_AI_API_KEY</code>, etc.).</small>
+    </div>
+  </div>
+
+  <script>
+    function toggleTry(id) {
+      var el = document.getElementById(id);
+      el.style.display = el.style.display === 'none' ? '' : 'none';
+    }
+
+    function showResult(id, data) {
+      var el = document.getElementById(id);
+      el.style.display = 'block';
+      el.querySelector('pre').textContent = JSON.stringify(data, null, 2);
+    }
+
+    async function aiCall(endpoint, body, resultId) {
+      var el = document.getElementById(resultId);
+      el.style.display = 'block';
+      el.querySelector('pre').textContent = 'Calling...';
+      try {
+        var resp = await fetch('/api' + endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        var data = await resp.json();
+        showResult(resultId, data);
+      } catch (e) {
+        showResult(resultId, { error: e.message });
+      }
+    }
+
+    function tryIdentify() {
+      var label = document.getElementById('identifyLabel').value;
+      var disctype = document.getElementById('identifyDisctype').value;
+      if (!label) { alert('Enter a disc label'); return; }
+      aiCall('/ai/identify', { label: label, disctype: disctype }, 'identifyResult');
+    }
+
+    function tryTranscode() {
+      var info = document.getElementById('transcodeInfo').value;
+      var videoInfo = {};
+      try { if (info.trim()) videoInfo = JSON.parse(info); } catch (e) { alert('Invalid JSON'); return; }
+      aiCall('/ai/transcode', { videoInfo: videoInfo }, 'transcodeResult');
+    }
+
+    function tryDiagnose() {
+      var log = document.getElementById('diagnoseLog').value;
+      if (!log) { alert('Enter an error log'); return; }
+      aiCall('/ai/diagnose', { errorLog: log }, 'diagnoseResult');
+    }
+
+    function tryFilename() {
+      var title = document.getElementById('filenameTitle').value;
+      var year = document.getElementById('filenameYear').value;
+      var videoType = document.getElementById('filenameType').value;
+      if (!title) { alert('Enter a title'); return; }
+      aiCall('/ai/filename', { title: title, year: year, videoType: videoType }, 'filenameResult');
+    }
+
+    function tryCredits() {
+      var title = document.getElementById('creditsTitle').value;
+      var year = document.getElementById('creditsYear').value;
+      var videoType = document.getElementById('creditsType').value;
+      if (!title) { alert('Enter a title'); return; }
+      aiCall('/ai/credits', { title: title, year: year, videoType: videoType }, 'creditsResult');
+    }
+  </script>
+  </div>
+  <script>
+    var drawer = mdc.drawer.MDCDrawer.attachTo(document.querySelector('.mdc-drawer'));
+    var topAppBar = mdc.topAppBar.MDCTopAppBar.attachTo(document.querySelector('.mdc-top-app-bar'));
+    topAppBar.setScrollTarget(document.querySelector('.page'));
+    topAppBar.listen('MDCTopAppBar:nav', function() {
+      drawer.open = !drawer.open;
+    });
+    if (window.innerWidth >= 993) drawer.open = true;
+  </script>
+</body>
+</html>

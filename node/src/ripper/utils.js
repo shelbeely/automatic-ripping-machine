@@ -4,7 +4,7 @@ const axios = require('axios');
 const os = require('os');
 const { execSync } = require('child_process');
 const { createLogger } = require('./logger');
-const { createAgent, generateMediaFilename, MIN_CONFIDENCE_THRESHOLD } = require('./ai_agent');
+const { createAgent, generateMediaFilename, fetchMediaCredits, MIN_CONFIDENCE_THRESHOLD } = require('./ai_agent');
 
 const logger = createLogger('utils');
 
@@ -380,6 +380,204 @@ async function tryAddDefaultUser() {
   }
 }
 
+/**
+ * Escape special XML characters in a string.
+ */
+function escapeXml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
+}
+
+/**
+ * Generate Matroska XML tags from structured credits metadata.
+ *
+ * Follows the Matroska tagging specification for movies/TV:
+ * https://www.matroska.org/technical/tagging.html
+ *
+ * @param {object} credits — credits object from fetchMediaCredits
+ * @returns {string} XML string suitable for mkvpropedit --tags
+ */
+function generateMkvTagsXml(credits) {
+  if (!credits) return null;
+
+  const tag = (name, value) => {
+    if (!value && value !== 0) return '';
+    return `      <Simple>\n        <Name>${escapeXml(name)}</Name>\n        <String>${escapeXml(String(value))}</String>\n      </Simple>\n`;
+  };
+
+  let xml = '<?xml version="1.0" encoding="UTF-8"?>\n<Tags>\n  <Tag>\n    <Targets>\n      <TargetTypeValue>50</TargetTypeValue>\n    </Targets>\n';
+
+  if (credits.title) xml += tag('TITLE', credits.title);
+  if (credits.original_title) xml += tag('ORIGINAL_TITLE', credits.original_title);
+  if (credits.subtitle) xml += tag('SUBTITLE', credits.subtitle);
+  // Prefer release_date over year for DATE_RELEASED to avoid duplicates
+  if (credits.release_date) {
+    xml += tag('DATE_RELEASED', credits.release_date);
+  } else if (credits.year) {
+    xml += tag('DATE_RELEASED', credits.year);
+  }
+  if (credits.synopsis) xml += tag('SYNOPSIS', credits.synopsis);
+  if (credits.tagline) xml += tag('SUMMARY', credits.tagline);
+  if (credits.language) xml += tag('LANGUAGE', credits.language);
+  if (credits.country) xml += tag('COUNTRY', credits.country);
+  if (credits.rating) xml += tag('LAW_RATING', credits.rating);
+  if (credits.studio) xml += tag('PRODUCTION_STUDIO', credits.studio);
+  if (credits.copyright) xml += tag('COPYRIGHT', credits.copyright);
+  if (credits.distributor) xml += tag('DISTRIBUTOR', credits.distributor);
+
+  if (Array.isArray(credits.genre)) {
+    for (const g of credits.genre) {
+      xml += tag('GENRE', g);
+    }
+  }
+
+  if (Array.isArray(credits.keywords)) {
+    for (const k of credits.keywords) {
+      xml += tag('KEYWORDS', k);
+    }
+  }
+
+  if (Array.isArray(credits.director)) {
+    for (const d of credits.director) {
+      xml += tag('DIRECTOR', d);
+    }
+  }
+
+  if (Array.isArray(credits.producer)) {
+    for (const p of credits.producer) {
+      xml += tag('PRODUCER', p);
+    }
+  }
+
+  if (Array.isArray(credits.writer)) {
+    for (const w of credits.writer) {
+      xml += tag('WRITTEN_BY', w);
+    }
+  }
+
+  if (Array.isArray(credits.composer)) {
+    for (const c of credits.composer) {
+      xml += tag('COMPOSER', c);
+    }
+  }
+
+  if (Array.isArray(credits.cinematographer)) {
+    for (const c of credits.cinematographer) {
+      xml += tag('CINEMATOGRAPHER', c);
+    }
+  }
+
+  if (Array.isArray(credits.editor)) {
+    for (const e of credits.editor) {
+      xml += tag('EDITED_BY', e);
+    }
+  }
+
+  if (Array.isArray(credits.production_designer)) {
+    for (const pd of credits.production_designer) {
+      xml += tag('PRODUCTION_DESIGNER', pd);
+    }
+  }
+
+  if (Array.isArray(credits.costume_designer)) {
+    for (const cd of credits.costume_designer) {
+      xml += tag('COSTUME_DESIGNER', cd);
+    }
+  }
+
+  if (Array.isArray(credits.cast)) {
+    for (const member of credits.cast) {
+      if (member.actor) {
+        const actorTag = member.character
+          ? `${member.actor} as ${member.character}`
+          : member.actor;
+        xml += tag('ACTOR', actorTag);
+      }
+    }
+  }
+
+  if (credits.comment) xml += tag('COMMENT', credits.comment);
+
+  xml += '  </Tag>\n</Tags>\n';
+  return xml;
+}
+
+/**
+ * Write MKV tags to a file using mkvpropedit.
+ *
+ * Generates an XML tag file from credits metadata and applies it
+ * to the specified MKV file. Uses AI to fetch credits if not provided.
+ *
+ * @param {string} mkvPath — path to the MKV file
+ * @param {object} job — job object with title, year, video_type, config
+ * @param {object} [credits] — pre-fetched credits; if null, fetches via AI
+ * @returns {object|null} — { tagged: true, credits } on success, null on failure
+ */
+async function writeMkvTags(mkvPath, job, credits) {
+  if (!mkvPath || !fs.existsSync(mkvPath)) {
+    logger.warn(`MKV tagging skipped: file not found: ${mkvPath}`);
+    return null;
+  }
+
+  const config = job.config || {};
+
+  // Fetch credits via AI if not provided
+  if (!credits) {
+    const agent = createAgent(config);
+    if (!agent) {
+      logger.warn('MKV tagging skipped: AI agent not configured');
+      return null;
+    }
+    try {
+      credits = await fetchMediaCredits(agent, job.title, job.year, job.video_type);
+    } catch (err) {
+      logger.warn(`MKV tagging: failed to fetch credits: ${err.message}`);
+      return null;
+    }
+  }
+
+  if (!credits) {
+    logger.warn('MKV tagging skipped: no credits data available');
+    return null;
+  }
+
+  const xml = generateMkvTagsXml(credits);
+  if (!xml) {
+    logger.warn('MKV tagging skipped: could not generate XML tags');
+    return null;
+  }
+
+  // Write XML to a temp file next to the MKV
+  const tagFile = mkvPath + '.tags.xml';
+  try {
+    fs.writeFileSync(tagFile, xml, 'utf8');
+    logger.info(`MKV tags XML written to: ${tagFile}`);
+
+    // Apply tags using mkvpropedit
+    const cmd = `mkvpropedit "${mkvPath}" --tags global:"${tagFile}"`;
+    logger.info(`Applying MKV tags: ${cmd}`);
+    execSync(cmd, { shell: true, encoding: 'utf8' });
+    logger.info(`MKV tags applied to: ${mkvPath}`);
+
+    return { tagged: true, credits };
+  } catch (err) {
+    logger.warn(`MKV tagging failed for ${mkvPath}: ${err.message}`);
+    return null;
+  } finally {
+    // Clean up temp tag file
+    try {
+      if (fs.existsSync(tagFile)) fs.unlinkSync(tagFile);
+    } catch (cleanErr) {
+      // ignore cleanup errors
+    }
+  }
+}
+
 module.exports = {
   notify,
   convertJobType,
@@ -402,4 +600,7 @@ module.exports = {
   duplicateRunCheck,
   jobDupeCheck,
   tryAddDefaultUser,
+  escapeXml,
+  generateMkvTagsXml,
+  writeMkvTags,
 };

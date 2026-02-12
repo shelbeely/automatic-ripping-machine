@@ -1,55 +1,175 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ARM - Settings</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <%- include('head') %>
 </head>
-<body>
+<body class="dark">
   <%- include('nav') %>
-  <div class="container-fluid mt-3">
-    <h3>Settings</h3>
-    <div class="card">
-      <div class="card-body">
-        <p>Configuration is managed through <code>arm.yaml</code>. Current settings:</p>
-        <% if (typeof config !== 'undefined') { %>
-          <pre><%= JSON.stringify(config, null, 2) %></pre>
-        <% } else { %>
-          <p class="text-muted">No configuration loaded</p>
+  <div class="page">
+    <h5>Settings</h5>
+    <div id="saveAlert" class="md3-alert success" style="display:none;">
+      <i class="material-icons-outlined">check_circle</i>
+      <span>Settings saved successfully.</span>
+    </div>
+    <div id="saveError" class="md3-alert error" style="display:none;"></div>
+
+    <% if (typeof config !== 'undefined') { %>
+    <%
+      var sections = {
+        'Ripping': ['RIPMETHOD', 'MAINFEATURE', 'MINLENGTH', 'MAXLENGTH', 'RAW_PATH', 'TRANSCODE_PATH', 'COMPLETED_PATH', 'LOGPATH'],
+        'Transcoding': ['SKIP_TRANSCODE', 'HB_PRESET_DVD', 'HB_PRESET_BD', 'HB_ARGS_DVD', 'HB_ARGS_BD', 'DEST_EXT', 'HANDBRAKE_CLI', 'USE_FFMPEG', 'FFMPEG_ARGS_DVD', 'FFMPEG_ARGS_BD', 'FFMPEG_PRE_ARGS_DVD', 'FFMPEG_PRE_ARGS_BD', 'MAX_CONCURRENT_TRANSCODES'],
+        'Metadata': ['OMDB_API_KEY', 'TMDB_API_KEY', 'DATE_ADDED_TO_TITLE'],
+        'AI Agent': ['AI_API_KEY', 'AI_API_URL', 'AI_MODEL'],
+        'Notifications': ['NOTIFY_RIP', 'NOTIFY_TRANSCODE', 'PB_KEY', 'IFTTT_KEY', 'IFTTT_EVENT', 'PO_USER_KEY', 'PO_APP_KEY', 'JSON_URL'],
+        'Media Server': ['EMBY_SERVER', 'EMBY_PORT', 'EMBY_API_KEY', 'EMBY_REFRESH']
+      };
+      var booleanKeys = ['SKIP_TRANSCODE', 'MAINFEATURE', 'HANDBRAKE_CLI', 'USE_FFMPEG', 'EMBY_REFRESH', 'NOTIFY_RIP', 'NOTIFY_TRANSCODE', 'DATE_ADDED_TO_TITLE'];
+      var numberKeys = ['MINLENGTH', 'MAXLENGTH', 'EMBY_PORT', 'MAX_CONCURRENT_TRANSCODES'];
+      var passwordKeys = ['AI_API_KEY', 'OMDB_API_KEY', 'TMDB_API_KEY', 'PB_KEY', 'IFTTT_KEY', 'PO_USER_KEY', 'PO_APP_KEY', 'EMBY_API_KEY'];
+      var selectKeys = { RIPMETHOD: ['mkv', 'backup', 'backup_dvd'], DEST_EXT: ['mkv', 'mp4', 'avi'] };
+    %>
+    <form id="settingsForm">
+      <% for (var sectionName in sections) { %>
+        <div class="md3-card" style="margin-top:1rem;">
+          <h6 class="md-typescale-title-medium"><%= sectionName %></h6>
+          <% sections[sectionName].forEach(function(key) { %>
+            <div class="grid" style="align-items:center;margin-bottom:0.5rem;">
+              <div class="s12 m4"><label for="<%= key %>"><code><%= key %></code></label></div>
+              <div class="s12 m8">
+                <% if (booleanKeys.indexOf(key) !== -1) { %>
+                  <md-switch id="<%= key %>" name="<%= key %>" <%= config[key] === true ? 'selected' : '' %>></md-switch>
+                <% } else if (selectKeys[key]) { %>
+                  <md-outlined-select id="<%= key %>" name="<%= key %>" style="width:100%;">
+                    <% selectKeys[key].forEach(function(opt) { %>
+                      <md-select-option value="<%= opt %>" <%= config[key] === opt ? 'selected' : '' %>><div slot="headline"><%= opt %></div></md-select-option>
+                    <% }); %>
+                  </md-outlined-select>
+                <% } else if (numberKeys.indexOf(key) !== -1) { %>
+                  <md-outlined-text-field type="number" id="<%= key %>" name="<%= key %>" value="<%= config[key] != null ? config[key] : '' %>" style="width:100%;"></md-outlined-text-field>
+                <% } else if (passwordKeys.indexOf(key) !== -1) { %>
+                  <md-outlined-text-field type="password" id="<%= key %>" name="<%= key %>" value="<%= config[key] || '' %>" autocomplete="off" style="width:100%;"></md-outlined-text-field>
+                <% } else { %>
+                  <md-outlined-text-field id="<%= key %>" name="<%= key %>" value="<%= config[key] != null ? config[key] : '' %>" style="width:100%;"></md-outlined-text-field>
+                <% } %>
+              </div>
+            </div>
+          <% }); %>
+        </div>
+      <% } %>
+
+      <div class="md3-card" style="margin-top:1rem;">
+        <h6 class="md-typescale-title-medium">Other Settings</h6>
+        <%
+          var knownKeys = [];
+          for (var s in sections) { knownKeys = knownKeys.concat(sections[s]); }
+        %>
+        <% for (var key in config) { %>
+          <% if (knownKeys.indexOf(key) === -1) { %>
+            <div class="grid" style="align-items:center;margin-bottom:0.5rem;">
+              <div class="s12 m4"><label for="<%= key %>"><code><%= key %></code></label></div>
+              <div class="s12 m8">
+                <md-outlined-text-field id="<%= key %>" name="<%= key %>" value="<%= config[key] != null ? config[key] : '' %>" style="width:100%;"></md-outlined-text-field>
+              </div>
+            </div>
+          <% } %>
         <% } %>
       </div>
-    </div>
+
+      <div style="margin-top:1rem;margin-bottom:1rem;">
+        <md-filled-button type="submit">Save Settings</md-filled-button>
+      </div>
+    </form>
+    <% } else { %>
+      <div class="md3-card" style="margin-top:1rem;">
+        <p>No configuration loaded. Create <code>/etc/arm/config/arm.yaml</code> to get started.</p>
+      </div>
+    <% } %>
+
     <% if (typeof drives !== 'undefined' && drives.length > 0) { %>
-      <div class="card mt-3">
-        <div class="card-header"><h5>Optical Drives</h5></div>
-        <div class="card-body">
-          <table class="table">
-            <thead><tr><th>Name</th><th>Mount</th><th>Model</th><th>Mode</th><th>Actions</th></tr></thead>
-            <tbody>
-              <% drives.forEach(function(drive) { %>
-                <tr>
-                  <td><%= drive.name %></td>
-                  <td><%= drive.mount %></td>
-                  <td><%= drive.model %></td>
-                  <td><%= drive.drive_mode %></td>
-                  <td><button class="btn btn-sm btn-warning" onclick="ejectDrive(<%= drive.drive_id %>)">Eject</button></td>
+      <div class="md3-card" style="margin-top:1rem;">
+        <h6 class="md-typescale-title-medium">Optical Drives</h6>
+        <div class="mdc-data-table">
+          <div class="mdc-data-table__table-container">
+            <table class="mdc-data-table__table" aria-label="Optical drives">
+              <thead>
+                <tr class="mdc-data-table__header-row">
+                  <th class="mdc-data-table__header-cell" role="columnheader" scope="col">Name</th>
+                  <th class="mdc-data-table__header-cell" role="columnheader" scope="col">Mount</th>
+                  <th class="mdc-data-table__header-cell" role="columnheader" scope="col">Model</th>
+                  <th class="mdc-data-table__header-cell" role="columnheader" scope="col">Mode</th>
+                  <th class="mdc-data-table__header-cell" role="columnheader" scope="col">Actions</th>
                 </tr>
-              <% }); %>
-            </tbody>
-          </table>
+              </thead>
+              <tbody class="mdc-data-table__content">
+                <% drives.forEach(function(drive) { %>
+                  <tr class="mdc-data-table__row">
+                    <td class="mdc-data-table__cell"><%= drive.name %></td>
+                    <td class="mdc-data-table__cell"><%= drive.mount %></td>
+                    <td class="mdc-data-table__cell"><%= drive.model %></td>
+                    <td class="mdc-data-table__cell"><%= drive.drive_mode %></td>
+                    <td class="mdc-data-table__cell"><md-filled-tonal-button onclick="ejectDrive(<%= drive.drive_id %>)">Eject</md-filled-tonal-button></td>
+                  </tr>
+                <% }); %>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     <% } %>
   </div>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
     function ejectDrive(id) {
       fetch('/drive/eject/' + id, { method: 'POST' })
-        .then(r => r.json())
-        .then(d => { if (d.success) location.reload(); })
-        .catch(e => alert('Error: ' + e.message));
+        .then(function(r) { return r.json(); })
+        .then(function(d) { if (d.success) location.reload(); })
+        .catch(function(e) { alert('Error: ' + e.message); });
     }
+
+    document.getElementById('settingsForm')?.addEventListener('submit', function(e) {
+      e.preventDefault();
+      var formData = {};
+      var inputs = this.querySelectorAll('md-outlined-text-field, md-outlined-select, md-switch');
+      inputs.forEach(function(input) {
+        if (input.tagName === 'MD-SWITCH') {
+          formData[input.name] = input.selected;
+        } else if (input.type === 'number' && input.value !== '') {
+          formData[input.name] = Number(input.value);
+        } else {
+          formData[input.name] = input.value;
+        }
+      });
+      fetch('/save_settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      })
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+          if (d.success) {
+            document.getElementById('saveAlert').style.display = '';
+            document.getElementById('saveError').style.display = 'none';
+            setTimeout(function() { document.getElementById('saveAlert').style.display = 'none'; }, 3000);
+          } else {
+            document.getElementById('saveError').textContent = d.error || 'Save failed';
+            document.getElementById('saveError').style.display = '';
+          }
+        })
+        .catch(function(e) {
+          document.getElementById('saveError').textContent = 'Error: ' + e.message;
+          document.getElementById('saveError').style.display = '';
+        });
+    });
+  </script>
+  </div>
+  <script>
+    var drawer = mdc.drawer.MDCDrawer.attachTo(document.querySelector('.mdc-drawer'));
+    var topAppBar = mdc.topAppBar.MDCTopAppBar.attachTo(document.querySelector('.mdc-top-app-bar'));
+    topAppBar.setScrollTarget(document.querySelector('.page'));
+    topAppBar.listen('MDCTopAppBar:nav', function() {
+      drawer.open = !drawer.open;
+    });
+    if (window.innerWidth >= 993) drawer.open = true;
   </script>
 </body>
 </html>

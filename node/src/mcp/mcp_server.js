@@ -10,7 +10,7 @@
  * @see https://modelcontextprotocol.io
  */
 const { createLogger } = require('../ripper/logger');
-const { createAgent, parseDiscLabel, diagnoseError, recommendTranscodeSettings, generateMediaFilename } = require('../ripper/ai_agent');
+const { createAgent, parseDiscLabel, diagnoseError, recommendTranscodeSettings, generateMediaFilename, fetchMediaCredits } = require('../ripper/ai_agent');
 
 const logger = createLogger('mcp_server');
 
@@ -108,6 +108,19 @@ const TOOLS = [
     },
   },
   {
+    name: 'fetch_credits',
+    description: 'Fetch structured credits and metadata for a movie or TV show using AI. Returns cast, crew, synopsis, genre, ratings, and more — suitable for MKV tagging.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        title: { type: 'string', description: 'Media title' },
+        year: { type: 'string', description: 'Release year' },
+        videoType: { type: 'string', description: 'movie or series', enum: ['movie', 'series'] },
+      },
+      required: ['title'],
+    },
+  },
+  {
     name: 'get_system_info',
     description: 'Get ARM system information including CPU, memory, and configuration status.',
     inputSchema: { type: 'object', properties: {} },
@@ -198,6 +211,12 @@ async function handleToolCall(name, args, config) {
       const job = { title: args.title, year: args.year, video_type: args.videoType, label: args.label, config };
       const result = await generateMediaFilename(agent, job);
       return result || { error: 'Could not generate filename' };
+    }
+
+    case 'fetch_credits': {
+      if (!agent) return { error: 'AI agent not configured' };
+      const result = await fetchMediaCredits(agent, args.title, args.year, args.videoType);
+      return result || { error: 'Could not fetch credits' };
     }
 
     case 'get_system_info': {

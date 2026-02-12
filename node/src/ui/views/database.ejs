@@ -1,28 +1,79 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ARM - Database</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <%- include('head') %>
 </head>
-<body>
+<body class="dark">
   <%- include('nav') %>
-  <div class="container-fluid mt-3">
-    <h3>Database</h3>
-    <div class="card">
-      <div class="card-body">
-        <h5>Tables</h5>
-        <ul class="list-group">
+  <div class="page">
+    <h5>Database</h5>
+    <div class="grid">
+      <div class="s12 m3">
+        <div class="md3-card">
+          <h6 class="md-typescale-title-medium">Tables</h6>
           <% if (typeof tables !== 'undefined') { %>
             <% tables.forEach(function(t) { %>
-              <li class="list-group-item"><%= t.name %></li>
+              <a href="/database?table=<%= t.name %>" style="display:flex;align-items:center;padding:8px 12px;text-decoration:none;border-radius:8px;<%= (typeof selectedTable !== 'undefined' && selectedTable === t.name) ? 'background:var(--md-sys-color-primary);color:var(--md-sys-color-on-primary);' : 'color:var(--md-sys-color-on-surface);' %>">
+                <span style="flex:1;"><%= t.name %></span>
+                <span class="status-chip primary"><%= t.count %></span>
+              </a>
             <% }); %>
           <% } %>
-        </ul>
+        </div>
+      </div>
+      <div class="s12 m9">
+        <% if (typeof selectedTable !== 'undefined' && selectedTable) { %>
+          <div class="md3-card" style="overflow-x:auto;">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <h6 class="md-typescale-title-medium"><%= selectedTable %></h6>
+              <span class="status-chip primary"><%= rows.length %> rows (max 100)</span>
+            </div>
+            <% if (typeof rows !== 'undefined' && rows.length > 0) { %>
+              <div class="mdc-data-table">
+                <div class="mdc-data-table__table-container">
+                  <table class="mdc-data-table__table" aria-label="Database table contents">
+                    <thead>
+                      <tr class="mdc-data-table__header-row">
+                        <% columns.forEach(function(col) { %>
+                          <th class="mdc-data-table__header-cell" role="columnheader" scope="col"><%= col %></th>
+                        <% }); %>
+                      </tr>
+                    </thead>
+                    <tbody class="mdc-data-table__content">
+                      <% rows.forEach(function(row) { %>
+                        <tr class="mdc-data-table__row">
+                          <% columns.forEach(function(col) { %>
+                            <td class="mdc-data-table__cell" style="max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"><%= row[col] != null ? row[col] : '' %></td>
+                          <% }); %>
+                        </tr>
+                      <% }); %>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            <% } else { %>
+              <p>No records in this table.</p>
+            <% } %>
+          </div>
+        <% } else { %>
+          <div class="md3-alert info">
+            <i class="material-icons-outlined">info</i>
+            <span>Select a table to view its contents.</span>
+          </div>
+        <% } %>
       </div>
     </div>
   </div>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  </div>
+  <script>
+    var drawer = mdc.drawer.MDCDrawer.attachTo(document.querySelector('.mdc-drawer'));
+    var topAppBar = mdc.topAppBar.MDCTopAppBar.attachTo(document.querySelector('.mdc-top-app-bar'));
+    topAppBar.setScrollTarget(document.querySelector('.page'));
+    topAppBar.listen('MDCTopAppBar:nav', function() {
+      drawer.open = !drawer.open;
+    });
+    if (window.innerWidth >= 993) drawer.open = true;
+  </script>
 </body>
 </html>

@@ -4,6 +4,7 @@ const path = require('path');
 const axios = require('axios');
 const { createLogger } = require('./logger');
 const { enhanceIdentification } = require('./ai_agent');
+const { callToolAuto, findTool } = require('../mcp/mcp_client');
 
 const logger = createLogger('identify');
 
@@ -36,12 +37,90 @@ function checkMount(job) {
   return mountpoint;
 }
 
+/**
+ * Parse MCP tool result content into text.
+ * MCP tools return { content: [{ type: 'text', text: '...' }] }.
+ */
+function parseMcpToolResultText(result) {
+  if (!result || !result.content) return null;
+  const parts = result.content
+    .filter((c) => c.type === 'text')
+    .map((c) => c.text);
+  return parts.length > 0 ? parts.join('\n') : null;
+}
+
+/**
+ * Parse OMDB MCP server movie details text into structured data.
+ * The text format from get_movie_details is:
+ *   🎬 Title (Year)
+ *   IMDB ID: tt1234567
+ *   Rating: PG-13
+ *   ...
+ */
+function parseOmdbMcpDetails(text) {
+  if (!text) return null;
+  const data = {};
+  const lines = text.split('\n');
+  for (const line of lines) {
+    const titleMatch = line.match(/^🎬\s+(.+?)\s+\((\d{4})\)/);
+    if (titleMatch) {
+      data.Title = titleMatch[1].trim();
+      data.Year = titleMatch[2];
+      continue;
+    }
+    const colonIdx = line.indexOf(': ');
+    if (colonIdx > 0) {
+      const key = line.substring(0, colonIdx).trim();
+      const value = line.substring(colonIdx + 2).trim();
+      data[key] = value;
+    }
+  }
+  return data.Title ? data : null;
+}
+
+/**
+ * Try to get video details via a connected OMDB MCP server.
+ * Uses the get_movie_details tool if available.
+ */
+async function getVideoDetailsMcp(job) {
+  if (!job.title) return false;
+
+  // Check if the get_movie_details tool is available from any connected MCP app
+  const found = findTool('get_movie_details');
+  if (!found) return false;
+
+  try {
+    const args = { title: job.title };
+    if (job.year) args.year = job.year;
+    const result = await callToolAuto('get_movie_details', args);
+    const text = parseMcpToolResultText(result);
+    const details = parseOmdbMcpDetails(text);
+    if (details && details.Title) {
+      job.title_auto = details.Title;
+      job.year_auto = details.Year || job.year;
+      job.video_type_auto = (details.Type === 'series') ? 'series' : 'movie';
+      job.imdb_id_auto = details['IMDB ID'] || '';
+      job.poster_url_auto = details.Poster || '';
+      job.hasnicetitle = true;
+      logger.info(`MCP OMDB lookup succeeded: "${job.title}" -> "${details.Title}"`);
+      return true;
+    }
+  } catch (err) {
+    logger.warn(`MCP OMDB lookup failed: ${err.message}`);
+  }
+  return false;
+}
+
 async function getVideoDetails(job) {
   const config = job.config || {};
   const omdbKey = config.OMDB_API_KEY || '';
   const tmdbKey = config.TMDB_API_KEY || '';
 
   if (!job.title) return job;
+
+  // Try MCP-based OMDB lookup first (uses connected omdb-mcp-server if available)
+  const mcpSuccess = await getVideoDetailsMcp(job);
+  if (mcpSuccess) return job;
 
   if (omdbKey) {
     try {
@@ -166,4 +245,7 @@ module.exports = {
   findMount,
   checkMount,
   getVideoDetails,
+  getVideoDetailsMcp,
+  parseMcpToolResultText,
+  parseOmdbMcpDetails,
 };

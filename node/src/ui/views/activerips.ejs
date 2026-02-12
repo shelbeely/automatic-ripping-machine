@@ -1,39 +1,63 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ARM - Active Rips</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <%- include('head') %>
 </head>
-<body>
+<body class="dark">
   <%- include('nav') %>
-  <div class="container-fluid mt-3">
-    <h3>Active Rips</h3>
+  <div class="page">
+    <h5>Active Rips</h5>
     <% if (typeof jobs !== 'undefined' && jobs.length > 0) { %>
-      <table class="table table-striped">
-        <thead>
-          <tr><th>ID</th><th>Title</th><th>Type</th><th>Status</th><th>Progress</th><th>ETA</th><th>Started</th><th>Actions</th></tr>
-        </thead>
-        <tbody>
-          <% jobs.forEach(function(job) { %>
-            <tr>
-              <td><a href="/jobdetail?job_id=<%= job.job_id %>"><%= job.job_id %></a></td>
-              <td><%= job.title || 'Unknown' %></td>
-              <td><%= job.disctype %></td>
-              <td><span class="badge bg-primary"><%= job.status %></span></td>
-              <td><%= job.progress || 'N/A' %></td>
-              <td><%= job.eta || 'N/A' %></td>
-              <td><%= new Date(job.start_time).toLocaleString() %></td>
-              <td><a href="/jobdetail?job_id=<%= job.job_id %>" class="btn btn-sm btn-outline-primary">Details</a></td>
-            </tr>
-          <% }); %>
-        </tbody>
-      </table>
+      <div class="mdc-data-table">
+        <div class="mdc-data-table__table-container">
+          <table class="mdc-data-table__table" aria-label="Active rips">
+            <thead>
+              <tr class="mdc-data-table__header-row">
+                <th class="mdc-data-table__header-cell" role="columnheader" scope="col">ID</th>
+                <th class="mdc-data-table__header-cell" role="columnheader" scope="col">Title</th>
+                <th class="mdc-data-table__header-cell" role="columnheader" scope="col">Type</th>
+                <th class="mdc-data-table__header-cell" role="columnheader" scope="col">Status</th>
+                <th class="mdc-data-table__header-cell" role="columnheader" scope="col">Progress</th>
+                <th class="mdc-data-table__header-cell" role="columnheader" scope="col">ETA</th>
+                <th class="mdc-data-table__header-cell" role="columnheader" scope="col">Started</th>
+                <th class="mdc-data-table__header-cell" role="columnheader" scope="col">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="mdc-data-table__content">
+              <% jobs.forEach(function(job) { %>
+                <tr class="mdc-data-table__row">
+                  <td class="mdc-data-table__cell"><a href="/jobdetail?job_id=<%= job.job_id %>"><%= job.job_id %></a></td>
+                  <td class="mdc-data-table__cell"><%= job.title || 'Unknown' %></td>
+                  <td class="mdc-data-table__cell"><%= job.disctype %></td>
+                  <td class="mdc-data-table__cell"><span class="status-chip primary"><%= job.status %></span></td>
+                  <td class="mdc-data-table__cell"><%= job.progress || 'N/A' %></td>
+                  <td class="mdc-data-table__cell"><%= job.eta || 'N/A' %></td>
+                  <td class="mdc-data-table__cell"><%= new Date(job.start_time).toLocaleString() %></td>
+                  <td class="mdc-data-table__cell"><a href="/jobdetail?job_id=<%= job.job_id %>"><md-outlined-button>Details</md-outlined-button></a></td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+      </div>
     <% } else { %>
-      <div class="alert alert-info">No active rips at this time.</div>
+      <div class="md3-alert info">
+        <i class="material-icons-outlined">info</i>
+        <span>No active rips at this time.</span>
+      </div>
     <% } %>
   </div>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  </div>
+  <script src="/static/js/app.js"></script>
+  <script>
+    var drawer = mdc.drawer.MDCDrawer.attachTo(document.querySelector('.mdc-drawer'));
+    var topAppBar = mdc.topAppBar.MDCTopAppBar.attachTo(document.querySelector('.mdc-top-app-bar'));
+    topAppBar.setScrollTarget(document.querySelector('.page'));
+    topAppBar.listen('MDCTopAppBar:nav', function() {
+      drawer.open = !drawer.open;
+    });
+    if (window.innerWidth >= 993) drawer.open = true;
+  </script>
 </body>
 </html>

@@ -5,7 +5,7 @@ const handbrake = require('./handbrake');
 const ffmpeg = require('./ffmpeg');
 const utils = require('./utils');
 const { createLogger } = require('./logger');
-const { createAgent, requireAgent, recommendTranscodeSettings, diagnoseError } = require('./ai_agent');
+const { createAgent, requireAgent, recommendTranscodeSettings, diagnoseError, fetchMediaCredits, MIN_CONFIDENCE_THRESHOLD } = require('./ai_agent');
 
 const logger = createLogger('arm_ripper');
 
@@ -118,6 +118,27 @@ async function ripVisualMedia(haveDupes, job, logfile, protection) {
     if (!config.SKIP_TRANSCODE) {
       logger.info(`Starting transcode for: ${title}`);
       await startTranscode(job, logfile, rawInPath, transcodeOutPath, protection);
+    }
+
+    // Phase 2.5: MKV metadata tagging
+    const tagSourcePath = config.SKIP_TRANSCODE ? rawInPath : transcodeOutPath;
+    if (job.title && config.DEST_EXT !== 'mp4') {
+      const tagAgent = createAgent(config);
+      if (tagAgent && fs.existsSync(tagSourcePath)) {
+        try {
+          const credits = await fetchMediaCredits(tagAgent, job.title, job.year, job.video_type);
+          if (credits && (credits.confidence || 0) >= MIN_CONFIDENCE_THRESHOLD) {
+            logger.info(`AI fetched credits for "${job.title}" — tagging MKV files`);
+            const mkvFiles = fs.readdirSync(tagSourcePath).filter((f) => f.endsWith('.mkv'));
+            for (const mkvFile of mkvFiles) {
+              const mkvPath = path.join(tagSourcePath, mkvFile);
+              await utils.writeMkvTags(mkvPath, job, credits);
+            }
+          }
+        } catch (tagErr) {
+          logger.warn(`MKV metadata tagging failed (continuing): ${tagErr.message}`);
+        }
+      }
     }
 
     // Phase 3: Move files

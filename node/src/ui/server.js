@@ -104,14 +104,81 @@ async function createApp(options = {}) {
   app.use('/', notificationRoutes);
   app.use('/api', apiRoutes);
 
-  // MCP Server — exposes ARM as an MCP app that the web UI and external clients connect to
+  // AI Dashboard — shows AI status, capabilities, and interactive testing
   const { loadConfig: loadArmConfig } = require('../config/config');
-  const { createMcpRouter } = require('../mcp/mcp_server');
   const armConfig = loadArmConfig();
+  const { DEFAULT_API_URL, DEFAULT_MODEL } = require('../ripper/ai_agent');
+
+  app.get('/ai', (req, res) => {
+    const aiKey = armConfig.AI_API_KEY || process.env.ARM_AI_API_KEY || '';
+    const aiUrl = armConfig.AI_API_URL || process.env.ARM_AI_API_URL || DEFAULT_API_URL;
+    const aiModel = armConfig.AI_MODEL || process.env.ARM_AI_MODEL || DEFAULT_MODEL;
+    res.render('ai', {
+      title: 'ARM - AI Dashboard',
+      aiConfigured: !!aiKey,
+      aiUrl,
+      aiModel,
+      aiKeyHint: aiKey ? aiKey.slice(-4) : '',
+    });
+  });
+
+  // Initial setup — create admin account on first run
+  const rateLimit = require('express-rate-limit');
+  const setupLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 10,
+    message: 'Too many setup attempts, please try again later',
+  });
+
+  app.get('/setup', async (req, res) => {
+    const { User } = require('../models/user');
+    const userCount = await User.count();
+    if (userCount > 0) {
+      return res.redirect('/login');
+    }
+    res.render('setup', { title: 'ARM - Initial Setup' });
+  });
+
+  app.post('/setup', setupLimiter, async (req, res) => {
+    try {
+      const { User } = require('../models/user');
+      const userCount = await User.count();
+      if (userCount > 0) {
+        return res.redirect('/login');
+      }
+      const { email, password } = req.body;
+      if (!email || !password) {
+        return res.render('setup', { title: 'ARM - Initial Setup' });
+      }
+      const hashedPw = await User.hashPassword(password);
+      const user = new User({ email, password: hashedPw, hash: '' });
+      await user.save();
+      logger.info(`Admin user "${email}" created via setup`);
+      res.redirect('/login');
+    } catch (err) {
+      logger.error(`Setup error: ${err.message}`);
+      res.status(500).render('error', { title: 'Error', error: err.message });
+    }
+  });
+
+  // MCP Server info page — shows server capabilities, tools, and resources
+  const { TOOLS: MCP_TOOLS, RESOURCES: MCP_RESOURCES, SERVER_INFO: MCP_SERVER_INFO, MCP_PROTOCOL_VERSION } = require('../mcp/mcp_server');
+  app.get('/mcp/server', (req, res) => {
+    res.render('mcpserver', {
+      title: 'ARM - MCP Server',
+      serverInfo: MCP_SERVER_INFO,
+      protocolVersion: MCP_PROTOCOL_VERSION,
+      tools: MCP_TOOLS,
+      resources: MCP_RESOURCES,
+    });
+  });
+
+  // MCP Server — exposes ARM as an MCP app that the web UI and external clients connect to
+  const { createMcpRouter } = require('../mcp/mcp_server');
   app.use('/mcp', createMcpRouter(armConfig));
 
   // MCP Client — connects to external MCP tool servers that ARM can use
-  const { initializeMcpApps, listAllTools, getConnectedCount, hasMcpAppsConfigured, parseMcpAppsConfig } = require('../mcp/mcp_client');
+  const { initializeMcpApps, listAllTools, listAllResources, getConnectedCount, hasMcpAppsConfigured, parseMcpAppsConfig } = require('../mcp/mcp_client');
   if (hasMcpAppsConfigured(armConfig)) {
     initializeMcpApps(armConfig).catch((err) => {
       logger.warn(`MCP apps initialization failed: ${err.message}`);
@@ -119,16 +186,23 @@ async function createApp(options = {}) {
   }
 
   // MCP status page — shows both server info and connected external apps
-  app.get('/mcp/apps', (req, res) => {
+  app.get('/mcp/apps', async (req, res) => {
     const tools = listAllTools();
     const connectedCount = getConnectedCount();
     const configs = parseMcpAppsConfig(armConfig);
+    let resources = [];
+    try {
+      resources = await listAllResources();
+    } catch (err) {
+      logger.warn(`Failed to list MCP resources: ${err.message}`);
+    }
     res.render('mcp', {
       title: 'ARM - MCP Apps',
       tools,
       connectedCount,
       configuredCount: configs.length,
       configs,
+      resources,
     });
   });
 
