@@ -10,7 +10,7 @@ in `arm/` is legacy and should not be modified.
 
 - **Runtime**: Node.js (CommonJS modules via `require()`)
 - **Web framework**: Express 5 with EJS templates
-- **UI framework**: Beer CSS 3.7.14 (Material Design 3 Expressive) via CDN
+- **UI framework**: Material Web (@material/web v2.4.0) via CDN import maps + custom MD3 CSS
 - **Icons**: Material Icons Outlined via Google Fonts CDN
 - **Database**: SQLite via Knex query builder + better-sqlite3
 - **Testing**: Jest with `--forceExit` flag (205 tests, 13 suites)
@@ -18,25 +18,29 @@ in `arm/` is legacy and should not be modified.
 - **MCP**: Model Context Protocol — ARM is both an MCP server and client
 - **Metadata**: MKV tagging via mkvpropedit, OMDB via MCP client
 
-### Why Beer CSS?
+### Material Web UI
 
-ARM uses Beer CSS (https://www.beercss.com/) for the UI framework because:
-- ARM renders server-side EJS templates — not React, Angular, or Vue
-- Beer CSS is a pure CSS + minimal JS framework that works with any HTML
-- It implements Material Design 3 Expressive with complete component coverage
-- Available via CDN with no build step required
-- Includes tables, navigation drawer, app bar, chips, dialogs, forms — all components ARM needs
-- Alternative `@material/web` is in maintenance mode and lacks tables, top app bar, and navigation rail
-- MUI requires React; Angular Material requires Angular — both incompatible with EJS
-
-### Beer CSS Conventions
+ARM uses Google's Material Web (@material/web v2.4.0) via CDN import maps, plus custom
+CSS classes for components Material Web doesn't provide (tables, cards, navigation, alerts).
 
 All views follow this pattern:
 ```html
-<!-- Head: Beer CSS + Material Icons + custom theme -->
-<link href="https://cdn.jsdelivr.net/npm/beercss@3.7.14/dist/cdn/beer.min.css" rel="stylesheet">
+<!-- Head: Roboto font + Material Icons + custom theme + import map -->
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
 <link rel="stylesheet" href="/static/css/style.css">
+<script type="importmap">
+{
+  "imports": {
+    "@material/web/": "https://esm.run/@material/web@2.4.0/"
+  }
+}
+</script>
+<script type="module">
+  import '@material/web/all.js';
+  import {styles as typescaleStyles} from '@material/web/typography/md-typescale-styles.js';
+  document.adoptedStyleSheets.push(typescaleStyles.styleSheet);
+</script>
 
 <!-- Body: dark mode, nav include, page wrapper -->
 <body class="dark">
@@ -44,29 +48,30 @@ All views follow this pattern:
   <div class="page">
     <!-- Content here -->
   </div>
-
-  <!-- Bottom: Beer CSS JS -->
-  <script type="module" src="https://cdn.jsdelivr.net/npm/beercss@3.7.14/dist/cdn/beer.min.js"></script>
-  <script type="module" src="https://cdn.jsdelivr.net/npm/material-dynamic-colors@1.1.4/dist/cdn/material-dynamic-colors.min.js"></script>
 </body>
 ```
 
-Key Beer CSS patterns used in ARM views:
-- Cards: `<article class="surface-container round">`
-- Tables: `<table class="stripes">`
-- Buttons: `<button class="primary small">`, `<a class="button small border">`
-- Chips/Badges: `<span class="chip small primary">`, `<span class="chip small error">`
-- Form fields: `<div class="field border round"><input><label></label></div>`
-- Switches: `<label class="switch"><input type="checkbox"><span></span></label>`
-- Alerts: `<div class="primary-container round padding">`, `error-container`, `tertiary-container`
-- Grid: `<div class="grid"><div class="s12 m6 l4">...</div></div>`
-- Icons: `<i>icon_name</i>` (Material Icons Outlined font)
-- Nav drawer: `<nav id="nav-drawer" class="left drawer">`
-- Top app bar: `<header class="fixed"><nav>...</nav></header>`
+Material Web components used:
+- Buttons: `<md-filled-button>`, `<md-outlined-button>`, `<md-filled-tonal-button>`
+- Text fields: `<md-outlined-text-field label="Name" id="x" name="x">`
+- Selects: `<md-outlined-select>` with `<md-select-option value="x"><div slot="headline">X</div></md-select-option>`
+- Switches: `<md-switch id="x" name="x" selected>` (uses `selected` not `checked`)
+- Dividers: `<md-divider>`
+- Icon buttons: `<md-icon-button>`
 
-Do NOT use Bootstrap classes. Beer CSS is the only CSS framework.
+Custom CSS classes (components Material Web doesn't provide):
+- Cards: `<div class="md3-card">`
+- Tables: `<table class="md3-table">`
+- Alerts: `<div class="md3-alert info|error|success">`
+- Status chips: `<span class="status-chip primary|error|success|warning">`
+- Nav drawer: `<nav class="md3-nav-drawer">`
+- App bar: `<header class="md3-app-bar">`
+- Grid: `<div class="grid"><div class="s12 m6">...</div></div>`
+- Icons: `<i class="material-icons-outlined">icon_name</i>`
 
-Reference: https://www.beercss.com/
+Do NOT use Bootstrap classes. Material Web + custom MD3 CSS is the only UI framework.
+
+Reference: https://material-web.dev/
 
 ## Key Conventions
 
@@ -108,7 +113,7 @@ node/src/
     identify.js — MCP-based OMDB lookup → direct OMDB API → TMDB fallback
     utils.js    — MKV tagging, file operations
   ui/
-    views/      — 18 EJS templates (Beer CSS Material Design 3 Expressive)
+    views/      — 18 EJS templates (Material Web + custom MD3 CSS)
     public/     — Static assets (css/style.css, js/app.js)
     api.js      — REST API endpoints (/api/*)
     server.js   — Express app factory, route registration
@@ -131,7 +136,7 @@ node/src/
 - Use `@modelcontextprotocol/sdk` for MCP client functionality.
 - Import MCP SDK client: `require('@modelcontextprotocol/sdk/client')`
 - Import MCP SDK stdio: `require('@modelcontextprotocol/sdk/client/stdio.js')`
-- UI framework: Beer CSS 3.7.14 via CDN (https://www.beercss.com/)
+- UI framework: Material Web (@material/web v2.4.0) via CDN import maps
 - Icons: Material Icons Outlined via Google Fonts CDN
 
 ## Common Tasks
@@ -154,7 +159,7 @@ node/src/
 3. Return `{ success: true, ... }` or `{ success: false, error: '...' }`
 
 ### Adding a new web UI page
-1. Create EJS template in `node/src/ui/views/` following Beer CSS conventions above
+1. Create EJS template in `node/src/ui/views/` following Material Web conventions above
 2. Add route handler in `node/src/ui/server.js` or a sub-router module
 3. Add navigation link in `node/src/ui/views/nav.ejs`
 4. Add route test in `node/test/server_routes.test.js`
