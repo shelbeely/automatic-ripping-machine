@@ -9,7 +9,14 @@
     "test": "jest --forceExit",
     "lint": "eslint src/"
   },
-  "keywords": ["ripping", "dvd", "bluray", "cd", "makemkv", "handbrake"],
+  "keywords": [
+    "ripping",
+    "dvd",
+    "bluray",
+    "cd",
+    "makemkv",
+    "handbrake"
+  ],
   "author": "",
   "license": "MIT",
   "type": "commonjs",
@@ -21,6 +28,7 @@
     "cors": "^2.8.5",
     "ejs": "^3.1.10",
     "express": "^5.1.0",
+    "express-rate-limit": "^7.5.0",
     "express-session": "^1.18.1",
     "glob": "^11.1.0",
     "js-yaml": "^4.1.0",

@@ -1,9 +1,16 @@
 const express = require('express');
+const rateLimit = require('express-rate-limit');
 const router = express.Router();
 const { User } = require('../../models/user');
 const { createLogger } = require('../../ripper/logger');
 
 const logger = createLogger('auth');
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  message: 'Too many attempts, please try again later',
+});
 
 function requireAuth(req, res, next) {
   if (req.session.user) {
@@ -19,7 +26,7 @@ router.get('/login', (req, res) => {
   res.render('login', { title: 'Login', error: null });
 });
 
-router.post('/login', async (req, res) => {
+router.post('/login', authLimiter, async (req, res) => {
   try {
     const { email, password } = req.body;
     const user = await User.findByEmail(email);
@@ -47,7 +54,7 @@ router.get('/update_password', requireAuth, (req, res) => {
   res.render('update_password', { title: 'Update Password', error: null, success: null });
 });
 
-router.post('/update_password', requireAuth, async (req, res) => {
+router.post('/update_password', requireAuth, authLimiter, async (req, res) => {
   try {
     const { old_password, new_password, confirm_password } = req.body;
     if (new_password !== confirm_password) {

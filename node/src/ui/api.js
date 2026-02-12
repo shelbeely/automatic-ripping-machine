@@ -1,4 +1,5 @@
 const express = require('express');
+const rateLimit = require('express-rate-limit');
 const router = express.Router();
 const fs = require('fs');
 const { Job, JobState } = require('../models/job');
@@ -8,6 +9,13 @@ const { Config } = require('../models/config_model');
 const { createLogger } = require('../ripper/logger');
 
 const logger = createLogger('api');
+
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 200,
+  message: { success: false, error: 'Too many requests' },
+});
+router.use(apiLimiter);
 
 function percentage(part, whole) {
   if (!whole) return 0;
