@@ -104,10 +104,58 @@ async function createApp(options = {}) {
   app.use('/', notificationRoutes);
   app.use('/api', apiRoutes);
 
-  // MCP Server — exposes ARM as an MCP app that the web UI and external clients connect to
+  // AI Dashboard — shows AI status, capabilities, and interactive testing
   const { loadConfig: loadArmConfig } = require('../config/config');
-  const { createMcpRouter } = require('../mcp/mcp_server');
   const armConfig = loadArmConfig();
+  const { DEFAULT_API_URL, DEFAULT_MODEL } = require('../ripper/ai_agent');
+
+  app.get('/ai', (req, res) => {
+    const aiKey = armConfig.AI_API_KEY || process.env.ARM_AI_API_KEY || '';
+    const aiUrl = armConfig.AI_API_URL || process.env.ARM_AI_API_URL || DEFAULT_API_URL;
+    const aiModel = armConfig.AI_MODEL || process.env.ARM_AI_MODEL || DEFAULT_MODEL;
+    res.render('ai', {
+      title: 'ARM - AI Dashboard',
+      aiConfigured: !!aiKey,
+      aiUrl,
+      aiModel,
+      aiKeyHint: aiKey ? aiKey.slice(-4) : '',
+    });
+  });
+
+  // Initial setup — create admin account on first run
+  app.get('/setup', async (req, res) => {
+    const { User } = require('../models/user');
+    const userCount = await User.count();
+    if (userCount > 0) {
+      return res.redirect('/login');
+    }
+    res.render('setup', { title: 'ARM - Initial Setup' });
+  });
+
+  app.post('/setup', async (req, res) => {
+    try {
+      const { User } = require('../models/user');
+      const userCount = await User.count();
+      if (userCount > 0) {
+        return res.redirect('/login');
+      }
+      const { email, password } = req.body;
+      if (!email || !password) {
+        return res.render('setup', { title: 'ARM - Initial Setup' });
+      }
+      const hashedPw = await User.hashPassword(password);
+      const user = new User({ email, password: hashedPw, hash: '' });
+      await user.save();
+      logger.info(`Admin user "${email}" created via setup`);
+      res.redirect('/login');
+    } catch (err) {
+      logger.error(`Setup error: ${err.message}`);
+      res.status(500).render('error', { title: 'Error', error: err.message });
+    }
+  });
+
+  // MCP Server — exposes ARM as an MCP app that the web UI and external clients connect to
+  const { createMcpRouter } = require('../mcp/mcp_server');
   app.use('/mcp', createMcpRouter(armConfig));
 
   // MCP Client — connects to external MCP tool servers that ARM can use
