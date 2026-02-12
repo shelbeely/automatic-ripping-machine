@@ -4,25 +4,35 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ARM - System Info</title>
-  <link href="https://cdn.jsdelivr.net/npm/beercss@3.7.14/dist/cdn/beer.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
   <link rel="stylesheet" href="/static/css/style.css">
+  <script type="importmap">
+  {
+    "imports": {
+      "@material/web/": "https://esm.run/@material/web@2.4.0/"
+    }
+  }
+  </script>
+  <script type="module">
+    import '@material/web/all.js';
+    import {styles as typescaleStyles} from '@material/web/typography/md-typescale-styles.js';
+    document.adoptedStyleSheets.push(typescaleStyles.styleSheet);
+  </script>
 </head>
 <body class="dark">
   <%- include('nav') %>
   <div class="page">
     <h5>System Information</h5>
-    <article class="surface-container round">
-      <table>
+    <div class="md3-card">
+      <table class="md3-table">
         <tr><td><strong>Hostname</strong></td><td><%= hostname %></td></tr>
         <tr><td><strong>Platform</strong></td><td><%= platform %></td></tr>
         <tr><td><strong>CPU</strong></td><td><%= systemInfo.cpu %></td></tr>
         <tr><td><strong>Memory</strong></td><td><%= systemInfo.mem_total %> GB</td></tr>
         <tr><td><strong>Uptime</strong></td><td><%= Math.floor(uptime / 3600) %>h <%= Math.floor((uptime % 3600) / 60) %>m</td></tr>
       </table>
-    </article>
+    </div>
   </div>
-  <script type="module" src="https://cdn.jsdelivr.net/npm/beercss@3.7.14/dist/cdn/beer.min.js"></script>
-  <script type="module" src="https://cdn.jsdelivr.net/npm/material-dynamic-colors@1.1.4/dist/cdn/material-dynamic-colors.min.js"></script>
 </body>
 </html>

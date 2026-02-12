@@ -4,39 +4,49 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ARM - Notifications</title>
-  <link href="https://cdn.jsdelivr.net/npm/beercss@3.7.14/dist/cdn/beer.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
   <link rel="stylesheet" href="/static/css/style.css">
+  <script type="importmap">
+  {
+    "imports": {
+      "@material/web/": "https://esm.run/@material/web@2.4.0/"
+    }
+  }
+  </script>
+  <script type="module">
+    import '@material/web/all.js';
+    import {styles as typescaleStyles} from '@material/web/typography/md-typescale-styles.js';
+    document.adoptedStyleSheets.push(typescaleStyles.styleSheet);
+  </script>
 </head>
 <body class="dark">
   <%- include('nav') %>
   <div class="page">
     <h5>Notifications</h5>
     <div style="margin-bottom:1rem;">
-      <button class="small border error" onclick="clearAll()">Clear All</button>
+      <md-outlined-button onclick="clearAll()">Clear All</md-outlined-button>
     </div>
     <% if (typeof notifications !== 'undefined' && notifications.length > 0) { %>
       <% notifications.forEach(function(n) { %>
-        <div class="<%= n.seen ? 'surface-container' : 'primary-container' %> round padding" style="margin-bottom:0.75rem;display:flex;justify-content:space-between;align-items:center;">
+        <div class="md3-card" style="margin-bottom:0.75rem;display:flex;justify-content:space-between;align-items:center;<%= !n.seen ? 'border-color:var(--md-sys-color-primary);' : '' %>">
           <div>
             <strong><%= n.title %></strong><br>
             <small><%= n.message %></small><br>
             <small><%= new Date(n.trigger_time).toLocaleString() %></small>
           </div>
           <% if (!n.seen) { %>
-            <button class="small border" onclick="markRead(<%= n.id %>)">Mark Read</button>
+            <md-outlined-button onclick="markRead(<%= n.id %>)">Mark Read</md-outlined-button>
           <% } %>
         </div>
       <% }); %>
     <% } else { %>
-      <div class="primary-container round padding">
-        <i>info</i>
+      <div class="md3-alert info">
+        <i class="material-icons-outlined">info</i>
         <span>No notifications</span>
       </div>
     <% } %>
   </div>
-  <script type="module" src="https://cdn.jsdelivr.net/npm/beercss@3.7.14/dist/cdn/beer.min.js"></script>
-  <script type="module" src="https://cdn.jsdelivr.net/npm/material-dynamic-colors@1.1.4/dist/cdn/material-dynamic-colors.min.js"></script>
   <script>
     function markRead(id) {
       fetch('/notification/read/' + id, { method: 'POST' })

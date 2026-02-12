@@ -4,18 +4,30 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ARM - Send Media</title>
-  <link href="https://cdn.jsdelivr.net/npm/beercss@3.7.14/dist/cdn/beer.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
   <link rel="stylesheet" href="/static/css/style.css">
+  <script type="importmap">
+  {
+    "imports": {
+      "@material/web/": "https://esm.run/@material/web@2.4.0/"
+    }
+  }
+  </script>
+  <script type="module">
+    import '@material/web/all.js';
+    import {styles as typescaleStyles} from '@material/web/typography/md-typescale-styles.js';
+    document.adoptedStyleSheets.push(typescaleStyles.styleSheet);
+  </script>
 </head>
 <body class="dark">
   <%- include('nav') %>
   <div class="page">
     <h5>Completed Media</h5>
-    <p><i>folder</i> <code><%= typeof completedPath !== 'undefined' ? completedPath : '' %></code></p>
+    <p><i class="material-icons-outlined" style="vertical-align:middle;">folder</i> <code><%= typeof completedPath !== 'undefined' ? completedPath : '' %></code></p>
     <% if (typeof files !== 'undefined' && files.length > 0) { %>
-      <article class="surface-container round" style="overflow-x:auto;">
-        <table class="stripes">
+      <div class="md3-card" style="overflow-x:auto;">
+        <table class="md3-table">
           <thead>
             <tr><th>Folder</th><th>Filename</th><th>Size</th><th>Modified</th></tr>
           </thead>
@@ -30,15 +42,13 @@
             <% }); %>
           </tbody>
         </table>
-      </article>
+      </div>
     <% } else { %>
-      <div class="primary-container round padding">
-        <i>info</i>
+      <div class="md3-alert info">
+        <i class="material-icons-outlined">info</i>
         <span>No completed media files found.</span>
       </div>
     <% } %>
   </div>
-  <script type="module" src="https://cdn.jsdelivr.net/npm/beercss@3.7.14/dist/cdn/beer.min.js"></script>
-  <script type="module" src="https://cdn.jsdelivr.net/npm/material-dynamic-colors@1.1.4/dist/cdn/material-dynamic-colors.min.js"></script>
 </body>
 </html>

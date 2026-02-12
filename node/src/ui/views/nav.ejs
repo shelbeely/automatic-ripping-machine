@@ -1,76 +1,72 @@
-<header class="fixed">
-  <nav>
-    <button class="circle transparent" data-ui="#nav-drawer">
-      <i>menu</i>
-    </button>
-    <h6 class="max">ARM</h6>
-    <% if (typeof isAuthenticated !== 'undefined' && isAuthenticated) { %>
-      <a href="/update_password" class="button circle transparent" title="Change Password">
-        <i>key</i>
-      </a>
-      <a href="/logout" class="button circle transparent" title="Logout">
-        <i>logout</i>
-      </a>
-    <% } else { %>
-      <a href="/login" class="button circle transparent" title="Login">
-        <i>login</i>
-      </a>
-    <% } %>
-  </nav>
+<header class="md3-app-bar">
+  <md-icon-button onclick="document.getElementById('nav-drawer').classList.toggle('open')">
+    <i class="material-icons-outlined">menu</i>
+  </md-icon-button>
+  <h6>ARM</h6>
+  <% if (typeof isAuthenticated !== 'undefined' && isAuthenticated) { %>
+    <a href="/update_password" title="Change Password">
+      <md-icon-button><i class="material-icons-outlined">key</i></md-icon-button>
+    </a>
+    <a href="/logout" title="Logout">
+      <md-icon-button><i class="material-icons-outlined">logout</i></md-icon-button>
+    </a>
+  <% } else { %>
+    <a href="/login" title="Login">
+      <md-icon-button><i class="material-icons-outlined">login</i></md-icon-button>
+    </a>
+  <% } %>
 </header>
 
-<nav id="nav-drawer" class="left drawer">
-  <header>
-    <nav>
-      <img src="/static/img/arm_logo.png" alt="ARM" height="30" onerror="this.style.display='none'">
-      <h5 class="max">ARM</h5>
-    </nav>
-  </header>
+<nav id="nav-drawer" class="md3-nav-drawer">
+  <div class="drawer-header">
+    <img src="/static/img/arm_logo.png" alt="ARM" height="30" onerror="this.style.display='none'">
+    <h5>ARM</h5>
+  </div>
 
   <a href="/">
-    <i>home</i>
+    <i class="material-icons-outlined">home</i>
     <div>Home</div>
   </a>
   <a href="/activerips">
-    <i>album</i>
+    <i class="material-icons-outlined">album</i>
     <div>Active Rips</div>
   </a>
   <a href="/history">
-    <i>history</i>
+    <i class="material-icons-outlined">history</i>
     <div>History</div>
   </a>
   <a href="/settings">
-    <i>settings</i>
+    <i class="material-icons-outlined">settings</i>
     <div>Settings</div>
   </a>
   <a href="/logs">
-    <i>description</i>
+    <i class="material-icons-outlined">description</i>
     <div>Logs</div>
   </a>
   <a href="/notifications">
-    <i>notifications</i>
+    <i class="material-icons-outlined">notifications</i>
     <div>Notifications</div>
   </a>
 
-  <div class="divider"></div>
+  <md-divider></md-divider>
 
   <a href="/ai">
-    <i>psychology</i>
+    <i class="material-icons-outlined">psychology</i>
     <div>AI Dashboard</div>
   </a>
   <a href="/mcp">
-    <i>hub</i>
+    <i class="material-icons-outlined">hub</i>
     <div>MCP Server</div>
   </a>
   <a href="/mcp/apps">
-    <i>apps</i>
+    <i class="material-icons-outlined">apps</i>
     <div>MCP Apps</div>
   </a>
 
-  <div class="divider"></div>
+  <md-divider></md-divider>
 
   <a href="/send">
-    <i>video_library</i>
+    <i class="material-icons-outlined">video_library</i>
     <div>Completed Media</div>
   </a>
 </nav>

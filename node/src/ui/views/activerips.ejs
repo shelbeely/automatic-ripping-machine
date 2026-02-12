@@ -4,16 +4,28 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ARM - Active Rips</title>
-  <link href="https://cdn.jsdelivr.net/npm/beercss@3.7.14/dist/cdn/beer.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
   <link rel="stylesheet" href="/static/css/style.css">
+  <script type="importmap">
+  {
+    "imports": {
+      "@material/web/": "https://esm.run/@material/web@2.4.0/"
+    }
+  }
+  </script>
+  <script type="module">
+    import '@material/web/all.js';
+    import {styles as typescaleStyles} from '@material/web/typography/md-typescale-styles.js';
+    document.adoptedStyleSheets.push(typescaleStyles.styleSheet);
+  </script>
 </head>
 <body class="dark">
   <%- include('nav') %>
   <div class="page">
     <h5>Active Rips</h5>
     <% if (typeof jobs !== 'undefined' && jobs.length > 0) { %>
-      <table class="stripes">
+      <table class="md3-table">
         <thead>
           <tr><th>ID</th><th>Title</th><th>Type</th><th>Status</th><th>Progress</th><th>ETA</th><th>Started</th><th>Actions</th></tr>
         </thead>
@@ -23,23 +35,21 @@
               <td><a href="/jobdetail?job_id=<%= job.job_id %>"><%= job.job_id %></a></td>
               <td><%= job.title || 'Unknown' %></td>
               <td><%= job.disctype %></td>
-              <td><span class="chip small primary"><%= job.status %></span></td>
+              <td><span class="status-chip primary"><%= job.status %></span></td>
               <td><%= job.progress || 'N/A' %></td>
               <td><%= job.eta || 'N/A' %></td>
               <td><%= new Date(job.start_time).toLocaleString() %></td>
-              <td><a href="/jobdetail?job_id=<%= job.job_id %>" class="button small border">Details</a></td>
+              <td><a href="/jobdetail?job_id=<%= job.job_id %>"><md-outlined-button>Details</md-outlined-button></a></td>
             </tr>
           <% }); %>
         </tbody>
       </table>
     <% } else { %>
-      <div class="primary-container round padding">
-        <i>info</i>
+      <div class="md3-alert info">
+        <i class="material-icons-outlined">info</i>
         <span>No active rips at this time.</span>
       </div>
     <% } %>
   </div>
-  <script type="module" src="https://cdn.jsdelivr.net/npm/beercss@3.7.14/dist/cdn/beer.min.js"></script>
-  <script type="module" src="https://cdn.jsdelivr.net/npm/material-dynamic-colors@1.1.4/dist/cdn/material-dynamic-colors.min.js"></script>
 </body>
 </html>

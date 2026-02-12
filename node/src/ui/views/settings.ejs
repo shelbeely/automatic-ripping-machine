@@ -4,19 +4,31 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ARM - Settings</title>
-  <link href="https://cdn.jsdelivr.net/npm/beercss@3.7.14/dist/cdn/beer.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
   <link rel="stylesheet" href="/static/css/style.css">
+  <script type="importmap">
+  {
+    "imports": {
+      "@material/web/": "https://esm.run/@material/web@2.4.0/"
+    }
+  }
+  </script>
+  <script type="module">
+    import '@material/web/all.js';
+    import {styles as typescaleStyles} from '@material/web/typography/md-typescale-styles.js';
+    document.adoptedStyleSheets.push(typescaleStyles.styleSheet);
+  </script>
 </head>
 <body class="dark">
   <%- include('nav') %>
   <div class="page">
     <h5>Settings</h5>
-    <div id="saveAlert" class="tertiary-container round padding" style="display:none;">
-      <i>check_circle</i>
+    <div id="saveAlert" class="md3-alert success" style="display:none;">
+      <i class="material-icons-outlined">check_circle</i>
       <span>Settings saved successfully.</span>
     </div>
-    <div id="saveError" class="error-container round padding" style="display:none;"></div>
+    <div id="saveError" class="md3-alert error" style="display:none;"></div>
 
     <% if (typeof config !== 'undefined') { %>
     <%
@@ -35,46 +47,35 @@
     %>
     <form id="settingsForm">
       <% for (var sectionName in sections) { %>
-        <article class="surface-container round" style="margin-top:1rem;">
-          <h6><%= sectionName %></h6>
+        <div class="md3-card" style="margin-top:1rem;">
+          <h6 class="md-typescale-title-medium"><%= sectionName %></h6>
           <% sections[sectionName].forEach(function(key) { %>
             <div class="grid" style="align-items:center;margin-bottom:0.5rem;">
               <div class="s12 m4"><label for="<%= key %>"><code><%= key %></code></label></div>
               <div class="s12 m8">
                 <% if (booleanKeys.indexOf(key) !== -1) { %>
-                  <label class="switch">
-                    <input type="checkbox" id="<%= key %>" name="<%= key %>" <%= config[key] === true ? 'checked' : '' %>>
-                    <span></span>
-                  </label>
+                  <md-switch id="<%= key %>" name="<%= key %>" <%= config[key] === true ? 'selected' : '' %>></md-switch>
                 <% } else if (selectKeys[key]) { %>
-                  <div class="field border round">
-                    <select id="<%= key %>" name="<%= key %>">
-                      <% selectKeys[key].forEach(function(opt) { %>
-                        <option value="<%= opt %>" <%= config[key] === opt ? 'selected' : '' %>><%= opt %></option>
-                      <% }); %>
-                    </select>
-                  </div>
+                  <md-outlined-select id="<%= key %>" name="<%= key %>" style="width:100%;">
+                    <% selectKeys[key].forEach(function(opt) { %>
+                      <md-select-option value="<%= opt %>" <%= config[key] === opt ? 'selected' : '' %>><div slot="headline"><%= opt %></div></md-select-option>
+                    <% }); %>
+                  </md-outlined-select>
                 <% } else if (numberKeys.indexOf(key) !== -1) { %>
-                  <div class="field border round">
-                    <input type="number" id="<%= key %>" name="<%= key %>" value="<%= config[key] != null ? config[key] : '' %>">
-                  </div>
+                  <md-outlined-text-field type="number" id="<%= key %>" name="<%= key %>" value="<%= config[key] != null ? config[key] : '' %>" style="width:100%;"></md-outlined-text-field>
                 <% } else if (passwordKeys.indexOf(key) !== -1) { %>
-                  <div class="field border round">
-                    <input type="password" id="<%= key %>" name="<%= key %>" value="<%= config[key] || '' %>" autocomplete="off">
-                  </div>
+                  <md-outlined-text-field type="password" id="<%= key %>" name="<%= key %>" value="<%= config[key] || '' %>" autocomplete="off" style="width:100%;"></md-outlined-text-field>
                 <% } else { %>
-                  <div class="field border round">
-                    <input type="text" id="<%= key %>" name="<%= key %>" value="<%= config[key] != null ? config[key] : '' %>">
-                  </div>
+                  <md-outlined-text-field id="<%= key %>" name="<%= key %>" value="<%= config[key] != null ? config[key] : '' %>" style="width:100%;"></md-outlined-text-field>
                 <% } %>
               </div>
             </div>
           <% }); %>
-        </article>
+        </div>
       <% } %>
 
-      <article class="surface-container round" style="margin-top:1rem;">
-        <h6>Other Settings</h6>
+      <div class="md3-card" style="margin-top:1rem;">
+        <h6 class="md-typescale-title-medium">Other Settings</h6>
         <%
           var knownKeys = [];
           for (var s in sections) { knownKeys = knownKeys.concat(sections[s]); }
@@ -84,29 +85,27 @@
             <div class="grid" style="align-items:center;margin-bottom:0.5rem;">
               <div class="s12 m4"><label for="<%= key %>"><code><%= key %></code></label></div>
               <div class="s12 m8">
-                <div class="field border round">
-                  <input type="text" id="<%= key %>" name="<%= key %>" value="<%= config[key] != null ? config[key] : '' %>">
-                </div>
+                <md-outlined-text-field id="<%= key %>" name="<%= key %>" value="<%= config[key] != null ? config[key] : '' %>" style="width:100%;"></md-outlined-text-field>
               </div>
             </div>
           <% } %>
         <% } %>
-      </article>
+      </div>
 
       <div style="margin-top:1rem;margin-bottom:1rem;">
-        <button type="submit" class="primary small">Save Settings</button>
+        <md-filled-button type="submit">Save Settings</md-filled-button>
       </div>
     </form>
     <% } else { %>
-      <article class="surface-container round" style="margin-top:1rem;">
+      <div class="md3-card" style="margin-top:1rem;">
         <p>No configuration loaded. Create <code>/etc/arm/config/arm.yaml</code> to get started.</p>
-      </article>
+      </div>
     <% } %>
 
     <% if (typeof drives !== 'undefined' && drives.length > 0) { %>
-      <article class="surface-container round" style="margin-top:1rem;">
-        <h6>Optical Drives</h6>
-        <table>
+      <div class="md3-card" style="margin-top:1rem;">
+        <h6 class="md-typescale-title-medium">Optical Drives</h6>
+        <table class="md3-table">
           <thead><tr><th>Name</th><th>Mount</th><th>Model</th><th>Mode</th><th>Actions</th></tr></thead>
           <tbody>
             <% drives.forEach(function(drive) { %>
@@ -115,16 +114,14 @@
                 <td><%= drive.mount %></td>
                 <td><%= drive.model %></td>
                 <td><%= drive.drive_mode %></td>
-                <td><button class="small secondary" onclick="ejectDrive(<%= drive.drive_id %>)">Eject</button></td>
+                <td><md-filled-tonal-button onclick="ejectDrive(<%= drive.drive_id %>)">Eject</md-filled-tonal-button></td>
               </tr>
             <% }); %>
           </tbody>
         </table>
-      </article>
+      </div>
     <% } %>
   </div>
-  <script type="module" src="https://cdn.jsdelivr.net/npm/beercss@3.7.14/dist/cdn/beer.min.js"></script>
-  <script type="module" src="https://cdn.jsdelivr.net/npm/material-dynamic-colors@1.1.4/dist/cdn/material-dynamic-colors.min.js"></script>
   <script>
     function ejectDrive(id) {
       fetch('/drive/eject/' + id, { method: 'POST' })
@@ -136,10 +133,10 @@
     document.getElementById('settingsForm')?.addEventListener('submit', function(e) {
       e.preventDefault();
       var formData = {};
-      var inputs = this.querySelectorAll('input, select');
+      var inputs = this.querySelectorAll('md-outlined-text-field, md-outlined-select, md-switch');
       inputs.forEach(function(input) {
-        if (input.type === 'checkbox') {
-          formData[input.name] = input.checked;
+        if (input.tagName === 'MD-SWITCH') {
+          formData[input.name] = input.selected;
         } else if (input.type === 'number' && input.value !== '') {
           formData[input.name] = Number(input.value);
         } else {

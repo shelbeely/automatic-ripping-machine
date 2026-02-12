@@ -4,9 +4,21 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><%= typeof title !== 'undefined' ? title : 'ARM - AI Dashboard' %></title>
-  <link href="https://cdn.jsdelivr.net/npm/beercss@3.7.14/dist/cdn/beer.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
   <link rel="stylesheet" href="/static/css/style.css">
+  <script type="importmap">
+  {
+    "imports": {
+      "@material/web/": "https://esm.run/@material/web@2.4.0/"
+    }
+  }
+  </script>
+  <script type="module">
+    import '@material/web/all.js';
+    import {styles as typescaleStyles} from '@material/web/typography/md-typescale-styles.js';
+    document.adoptedStyleSheets.push(typescaleStyles.styleSheet);
+  </script>
 </head>
 <body class="dark">
   <%- include('nav') %>
@@ -19,32 +31,32 @@
 
     <div class="grid">
       <div class="s12 m4">
-        <article class="surface-container round" style="text-align:center;">
-          <h6>AI Status</h6>
-          <p style="font-size:1.5rem;"><span class="chip <%= aiConfigured ? 'tertiary' : 'error' %>"><%= aiConfigured ? 'Active' : 'Not Configured' %></span></p>
+        <div class="md3-card" style="text-align:center;">
+          <h6 class="md-typescale-title-medium">AI Status</h6>
+          <p style="font-size:1.5rem;"><span class="status-chip <%= aiConfigured ? 'success' : 'error' %>"><%= aiConfigured ? 'Active' : 'Not Configured' %></span></p>
           <% if (!aiConfigured) { %>
             <small>Set <code>AI_API_KEY</code> in arm.yaml</small>
           <% } %>
-        </article>
+        </div>
       </div>
       <div class="s12 m4">
-        <article class="surface-container round" style="text-align:center;">
-          <h6>Model</h6>
+        <div class="md3-card" style="text-align:center;">
+          <h6 class="md-typescale-title-medium">Model</h6>
           <p style="font-size:1.25rem;"><%= aiModel %></p>
-        </article>
+        </div>
       </div>
       <div class="s12 m4">
-        <article class="surface-container round" style="text-align:center;">
-          <h6>Capabilities</h6>
+        <div class="md3-card" style="text-align:center;">
+          <h6 class="md-typescale-title-medium">Capabilities</h6>
           <p style="font-size:1.5rem;">5</p>
-        </article>
+        </div>
       </div>
     </div>
 
     <!-- AI Capabilities -->
-    <article class="surface-container round" style="margin-top:1rem;">
-      <h6>AI Capabilities</h6>
-      <table class="stripes">
+    <div class="md3-card" style="margin-top:1rem;">
+      <h6 class="md-typescale-title-medium">AI Capabilities</h6>
+      <table class="md3-table">
         <thead>
           <tr><th>Capability</th><th>Description</th><th>API Endpoint</th><th>Try</th></tr>
         </thead>
@@ -53,157 +65,130 @@
             <td><strong>Disc Identification</strong></td>
             <td>Parse disc labels to identify movie/TV show titles, years, and types</td>
             <td><code>POST /api/ai/identify</code></td>
-            <td><button class="small border" onclick="toggleTry('tryIdentify')">Try</button></td>
+            <td><md-outlined-button onclick="toggleTry('tryIdentify')">Try</md-outlined-button></td>
           </tr>
           <tr id="tryIdentify" style="display:none;">
             <td colspan="4">
               <div class="grid" style="padding:0.5rem;">
                 <div class="s12 m8">
-                  <div class="field border round">
-                    <input type="text" id="identifyLabel">
-                    <label for="identifyLabel">Disc label (e.g., STAR_WARS_EP_IV)</label>
-                  </div>
+                  <md-outlined-text-field label="Disc label (e.g., STAR_WARS_EP_IV)" id="identifyLabel" style="width:100%;"></md-outlined-text-field>
                 </div>
                 <div class="s12 m2">
-                  <div class="field border round">
-                    <select id="identifyDisctype">
-                      <option value="unknown">Unknown</option>
-                      <option value="dvd">DVD</option>
-                      <option value="bluray">Blu-ray</option>
-                    </select>
-                  </div>
+                  <md-outlined-select id="identifyDisctype" style="width:100%;">
+                    <md-select-option value="unknown"><div slot="headline">Unknown</div></md-select-option>
+                    <md-select-option value="dvd"><div slot="headline">DVD</div></md-select-option>
+                    <md-select-option value="bluray"><div slot="headline">Blu-ray</div></md-select-option>
+                  </md-outlined-select>
                 </div>
                 <div class="s12 m2">
-                  <button class="small primary" style="width:100%;" onclick="tryIdentify()">Call</button>
+                  <md-filled-button style="width:100%;" onclick="tryIdentify()">Call</md-filled-button>
                 </div>
               </div>
-              <div id="identifyResult" style="display:none;"><pre class="surface-container round padding" style="overflow-x:auto;"></pre></div>
+              <div id="identifyResult" style="display:none;"><pre></pre></div>
             </td>
           </tr>
           <tr>
             <td><strong>Transcode Optimization</strong></td>
             <td>Recommend optimal transcode settings based on video properties and disc type</td>
             <td><code>POST /api/ai/transcode</code></td>
-            <td><button class="small border" onclick="toggleTry('tryTranscode')">Try</button></td>
+            <td><md-outlined-button onclick="toggleTry('tryTranscode')">Try</md-outlined-button></td>
           </tr>
           <tr id="tryTranscode" style="display:none;">
             <td colspan="4">
               <div class="grid" style="padding:0.5rem;">
                 <div class="s12 m10">
-                  <div class="field border round">
-                    <input type="text" id="transcodeInfo">
-                    <label for="transcodeInfo">Video info JSON</label>
-                  </div>
+                  <md-outlined-text-field label="Video info JSON" id="transcodeInfo" style="width:100%;"></md-outlined-text-field>
                 </div>
                 <div class="s12 m2">
-                  <button class="small primary" style="width:100%;" onclick="tryTranscode()">Call</button>
+                  <md-filled-button style="width:100%;" onclick="tryTranscode()">Call</md-filled-button>
                 </div>
               </div>
-              <div id="transcodeResult" style="display:none;"><pre class="surface-container round padding" style="overflow-x:auto;"></pre></div>
+              <div id="transcodeResult" style="display:none;"><pre></pre></div>
             </td>
           </tr>
           <tr>
             <td><strong>Error Diagnosis</strong></td>
             <td>Analyze ripping/transcoding errors and provide actionable troubleshooting steps</td>
             <td><code>POST /api/ai/diagnose</code></td>
-            <td><button class="small border" onclick="toggleTry('tryDiagnose')">Try</button></td>
+            <td><md-outlined-button onclick="toggleTry('tryDiagnose')">Try</md-outlined-button></td>
           </tr>
           <tr id="tryDiagnose" style="display:none;">
             <td colspan="4">
               <div class="grid" style="padding:0.5rem;">
                 <div class="s12 m10">
-                  <div class="field border round textarea">
-                    <textarea id="diagnoseLog" rows="2" placeholder="Paste error log here..."></textarea>
-                    <label for="diagnoseLog">Paste error log here...</label>
-                  </div>
+                  <md-outlined-text-field type="textarea" label="Paste error log here..." id="diagnoseLog" rows="2" style="width:100%;"></md-outlined-text-field>
                 </div>
                 <div class="s12 m2">
-                  <button class="small primary" style="width:100%;" onclick="tryDiagnose()">Call</button>
+                  <md-filled-button style="width:100%;" onclick="tryDiagnose()">Call</md-filled-button>
                 </div>
               </div>
-              <div id="diagnoseResult" style="display:none;"><pre class="surface-container round padding" style="overflow-x:auto;"></pre></div>
+              <div id="diagnoseResult" style="display:none;"><pre></pre></div>
             </td>
           </tr>
           <tr>
             <td><strong>Filename Generation</strong></td>
             <td>Generate Plex/Emby/Jellyfin-compatible filenames and directory structures</td>
             <td><code>POST /api/ai/filename</code></td>
-            <td><button class="small border" onclick="toggleTry('tryFilename')">Try</button></td>
+            <td><md-outlined-button onclick="toggleTry('tryFilename')">Try</md-outlined-button></td>
           </tr>
           <tr id="tryFilename" style="display:none;">
             <td colspan="4">
               <div class="grid" style="padding:0.5rem;">
                 <div class="s12 m5">
-                  <div class="field border round">
-                    <input type="text" id="filenameTitle">
-                    <label for="filenameTitle">Movie title</label>
-                  </div>
+                  <md-outlined-text-field label="Movie title" id="filenameTitle" style="width:100%;"></md-outlined-text-field>
                 </div>
                 <div class="s12 m2">
-                  <div class="field border round">
-                    <input type="text" id="filenameYear">
-                    <label for="filenameYear">Year</label>
-                  </div>
+                  <md-outlined-text-field label="Year" id="filenameYear" style="width:100%;"></md-outlined-text-field>
                 </div>
                 <div class="s12 m3">
-                  <div class="field border round">
-                    <select id="filenameType">
-                      <option value="movie">Movie</option>
-                      <option value="series">Series</option>
-                    </select>
-                  </div>
+                  <md-outlined-select id="filenameType" style="width:100%;">
+                    <md-select-option value="movie"><div slot="headline">Movie</div></md-select-option>
+                    <md-select-option value="series"><div slot="headline">Series</div></md-select-option>
+                  </md-outlined-select>
                 </div>
                 <div class="s12 m2">
-                  <button class="small primary" style="width:100%;" onclick="tryFilename()">Call</button>
+                  <md-filled-button style="width:100%;" onclick="tryFilename()">Call</md-filled-button>
                 </div>
               </div>
-              <div id="filenameResult" style="display:none;"><pre class="surface-container round padding" style="overflow-x:auto;"></pre></div>
+              <div id="filenameResult" style="display:none;"><pre></pre></div>
             </td>
           </tr>
           <tr>
             <td><strong>Credits &amp; Metadata</strong></td>
             <td>Fetch structured credits (cast, crew, synopsis, genre, ratings) for MKV tagging</td>
             <td><code>POST /api/ai/credits</code></td>
-            <td><button class="small border" onclick="toggleTry('tryCredits')">Try</button></td>
+            <td><md-outlined-button onclick="toggleTry('tryCredits')">Try</md-outlined-button></td>
           </tr>
           <tr id="tryCredits" style="display:none;">
             <td colspan="4">
               <div class="grid" style="padding:0.5rem;">
                 <div class="s12 m5">
-                  <div class="field border round">
-                    <input type="text" id="creditsTitle">
-                    <label for="creditsTitle">Movie title</label>
-                  </div>
+                  <md-outlined-text-field label="Movie title" id="creditsTitle" style="width:100%;"></md-outlined-text-field>
                 </div>
                 <div class="s12 m2">
-                  <div class="field border round">
-                    <input type="text" id="creditsYear">
-                    <label for="creditsYear">Year</label>
-                  </div>
+                  <md-outlined-text-field label="Year" id="creditsYear" style="width:100%;"></md-outlined-text-field>
                 </div>
                 <div class="s12 m3">
-                  <div class="field border round">
-                    <select id="creditsType">
-                      <option value="movie">Movie</option>
-                      <option value="series">Series</option>
-                    </select>
-                  </div>
+                  <md-outlined-select id="creditsType" style="width:100%;">
+                    <md-select-option value="movie"><div slot="headline">Movie</div></md-select-option>
+                    <md-select-option value="series"><div slot="headline">Series</div></md-select-option>
+                  </md-outlined-select>
                 </div>
                 <div class="s12 m2">
-                  <button class="small primary" style="width:100%;" onclick="tryCredits()">Call</button>
+                  <md-filled-button style="width:100%;" onclick="tryCredits()">Call</md-filled-button>
                 </div>
               </div>
-              <div id="creditsResult" style="display:none;"><pre class="surface-container round padding" style="overflow-x:auto;"></pre></div>
+              <div id="creditsResult" style="display:none;"><pre></pre></div>
             </td>
           </tr>
         </tbody>
       </table>
-    </article>
+    </div>
 
     <!-- AI Configuration -->
-    <article class="surface-container round" style="margin-top:1rem;">
-      <h6>AI Configuration</h6>
-      <table>
+    <div class="md3-card" style="margin-top:1rem;">
+      <h6 class="md-typescale-title-medium">AI Configuration</h6>
+      <table class="md3-table">
         <tr>
           <td><strong>API URL</strong></td>
           <td><code><%= aiUrl %></code></td>
@@ -218,11 +203,9 @@
         </tr>
       </table>
       <small>Configure via <code>AI_API_KEY</code>, <code>AI_API_URL</code>, and <code>AI_MODEL</code> in <code>arm.yaml</code> or environment variables (<code>ARM_AI_API_KEY</code>, etc.).</small>
-    </article>
+    </div>
   </div>
 
-  <script type="module" src="https://cdn.jsdelivr.net/npm/beercss@3.7.14/dist/cdn/beer.min.js"></script>
-  <script type="module" src="https://cdn.jsdelivr.net/npm/material-dynamic-colors@1.1.4/dist/cdn/material-dynamic-colors.min.js"></script>
   <script>
     function toggleTry(id) {
       var el = document.getElementById(id);

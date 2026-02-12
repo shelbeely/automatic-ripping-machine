@@ -1,6 +1,5 @@
-/* ── MD3 Expressive ARM Theme ── */
-/* Beer CSS 3.7.14 — Material Design 3 Expressive dark theme */
-/* Reference: https://www.beercss.com/ | https://m3.material.io/ */
+/* ── MD3 ARM Theme — Material Web (@material/web) ── */
+/* Reference: https://material-web.dev/ | https://m3.material.io/ */
 :root {
   --md-sys-color-primary: #7B61FF;
   --md-sys-color-on-primary: #FFFFFF;
@@ -11,18 +10,23 @@
   --md-sys-color-on-surface: #E6E0E9;
   --md-sys-color-on-surface-variant: #CAC4D0;
   --md-sys-color-secondary: #FFB4AB;
+  --md-sys-color-secondary-container: #5D3F3B;
   --md-sys-color-tertiary: #79D1C3;
   --md-sys-color-outline: #938F99;
   --md-sys-color-outline-variant: #49454F;
   --md-sys-color-error: #F2B8B5;
+  --md-sys-color-on-error: #601410;
   --md-sys-color-success: #79D1C3;
   --md-sys-color-warning: #FFD29F;
+  --md-sys-typescale-body-medium-font: 'Roboto', sans-serif;
 }
 
 /* ── Body ── */
 body.dark {
   background-color: var(--md-sys-color-surface);
   color: var(--md-sys-color-on-surface);
+  font-family: 'Roboto', sans-serif;
+  margin: 0;
 }
 
 /* ── Page content area ── */
@@ -35,89 +39,179 @@ body.dark {
   }
 }
 
-/* ── Top app bar ── */
-header.fixed {
-  background-color: var(--md-sys-color-surface-container);
+/* ── Grid system ── */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 16px;
 }
-header.fixed nav {
-  background-color: var(--md-sys-color-surface-container);
+.s12 { grid-column: span 12; }
+.s6 { grid-column: span 6; }
+@media (min-width: 600px) {
+  .m2 { grid-column: span 2; }
+  .m3 { grid-column: span 3; }
+  .m4 { grid-column: span 4; }
+  .m5 { grid-column: span 5; }
+  .m6 { grid-column: span 6; }
+  .m8 { grid-column: span 8; }
+  .m9 { grid-column: span 9; }
+  .m10 { grid-column: span 10; }
 }
 
+/* ── Top app bar ── */
+.md3-app-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  background-color: var(--md-sys-color-surface-container);
+  color: var(--md-sys-color-on-surface);
+}
+.md3-app-bar h6 {
+  flex: 1;
+  margin: 0 16px;
+  font-size: 1.25rem;
+}
+.md3-app-bar .spacer { flex: 1; }
+
 /* ── Navigation drawer ── */
-nav.drawer {
+.md3-nav-drawer {
+  position: fixed;
+  top: 64px;
+  left: 0;
+  bottom: 0;
+  width: 256px;
   background-color: var(--md-sys-color-surface-container);
   border-right: 1px solid var(--md-sys-color-outline-variant);
+  overflow-y: auto;
+  z-index: 90;
+  transform: translateX(-100%);
+  transition: transform 0.25s ease;
 }
-nav.drawer header {
+.md3-nav-drawer.open {
+  transform: translateX(0);
+}
+@media (min-width: 993px) {
+  .md3-nav-drawer {
+    transform: translateX(0);
+  }
+}
+.md3-nav-drawer .drawer-header {
   padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
-nav.drawer a {
+.md3-nav-drawer .drawer-header h5 {
+  margin: 0;
+  flex: 1;
+}
+.md3-nav-drawer a {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 24px;
   color: var(--md-sys-color-on-surface-variant);
+  text-decoration: none;
   border-radius: 28px;
   margin: 2px 12px;
+  font-size: 0.875rem;
 }
-nav.drawer a:hover {
+.md3-nav-drawer a:hover {
   background-color: var(--md-sys-color-surface-container-high);
   color: var(--md-sys-color-on-surface);
 }
-nav.drawer a.active {
+.md3-nav-drawer a.active {
   background-color: var(--md-sys-color-primary-container);
   color: var(--md-sys-color-primary);
 }
-nav.drawer a i {
+.md3-nav-drawer a i {
   color: inherit;
+  font-size: 24px;
 }
 
-/* ── Cards / Articles ── */
-article {
+/* ── Cards ── */
+.md3-card {
   background-color: var(--md-sys-color-surface-container);
   color: var(--md-sys-color-on-surface);
   border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: 12px;
+  padding: 16px;
 }
 
 /* ── Tables ── */
-table {
+.md3-table {
+  width: 100%;
+  border-collapse: collapse;
   color: var(--md-sys-color-on-surface);
-  border-color: var(--md-sys-color-outline-variant);
 }
-table th {
+.md3-table th {
   color: var(--md-sys-color-on-surface-variant);
   font-weight: 500;
+  text-align: left;
 }
-table td, table th {
-  border-color: var(--md-sys-color-outline-variant);
+.md3-table td, .md3-table th {
+  border-bottom: 1px solid var(--md-sys-color-outline-variant);
   padding: 12px 16px;
 }
-table tbody tr:hover {
+.md3-table tbody tr:hover {
   background-color: rgba(123, 97, 255, 0.08);
 }
 
-/* ── Form inputs ── */
-.field.border {
-  border-color: var(--md-sys-color-outline) !important;
+/* ── Alerts ── */
+.md3-alert {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 12px;
+  margin-bottom: 8px;
 }
-.field.border:focus-within {
-  border-color: var(--md-sys-color-primary) !important;
-}
-input, select, textarea {
-  background-color: var(--md-sys-color-surface-container);
+.md3-alert.info {
+  background-color: var(--md-sys-color-primary-container);
   color: var(--md-sys-color-on-surface);
-  border-color: var(--md-sys-color-outline);
 }
-input:focus, select:focus, textarea:focus {
-  background-color: var(--md-sys-color-surface);
-  color: var(--md-sys-color-on-surface);
-  border-color: var(--md-sys-color-primary);
-  outline-color: var(--md-sys-color-primary);
+.md3-alert.error {
+  background-color: rgba(242, 184, 181, 0.15);
+  color: var(--md-sys-color-error);
+}
+.md3-alert.success {
+  background-color: rgba(121, 209, 195, 0.15);
+  color: var(--md-sys-color-success);
 }
 
-/* ── Buttons ── */
-button.primary {
-  background-color: var(--md-sys-color-primary);
-  color: var(--md-sys-color-on-primary);
+/* ── Status chips ── */
+.status-chip {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 500;
 }
-button.primary:hover {
-  background-color: #8F7AFF;
+.status-chip.primary {
+  background-color: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-primary);
+}
+.status-chip.error {
+  background-color: rgba(242, 184, 181, 0.15);
+  color: var(--md-sys-color-error);
+}
+.status-chip.success {
+  background-color: rgba(121, 209, 195, 0.15);
+  color: var(--md-sys-color-success);
+}
+.status-chip.warning {
+  background-color: rgba(255, 210, 159, 0.15);
+  color: var(--md-sys-color-warning);
+}
+.status-chip.secondary {
+  background-color: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-secondary);
 }
 
 /* ── Links ── */
@@ -140,10 +234,35 @@ pre {
   border: 1px solid var(--md-sys-color-outline-variant);
 }
 
-/* ── Divider ── */
-.divider, hr {
-  border-color: var(--md-sys-color-outline-variant);
-  margin: 8px 0;
+/* ── Material Web component theming ── */
+md-filled-button {
+  --md-filled-button-container-color: var(--md-sys-color-primary);
+  --md-filled-button-label-text-color: var(--md-sys-color-on-primary);
+}
+md-outlined-button {
+  --md-outlined-button-outline-color: var(--md-sys-color-outline);
+  --md-outlined-button-label-text-color: var(--md-sys-color-primary);
+}
+md-filled-tonal-button {
+  --md-filled-tonal-button-container-color: var(--md-sys-color-secondary-container);
+  --md-filled-tonal-button-label-text-color: var(--md-sys-color-secondary);
+}
+md-outlined-text-field, md-outlined-select {
+  --md-outlined-text-field-outline-color: var(--md-sys-color-outline);
+  --md-outlined-text-field-focus-outline-color: var(--md-sys-color-primary);
+  --md-outlined-text-field-input-text-color: var(--md-sys-color-on-surface);
+  --md-outlined-text-field-label-text-color: var(--md-sys-color-on-surface-variant);
+  --md-outlined-select-text-field-outline-color: var(--md-sys-color-outline);
+  --md-outlined-select-text-field-focus-outline-color: var(--md-sys-color-primary);
+  --md-outlined-select-text-field-input-text-color: var(--md-sys-color-on-surface);
+  width: 100%;
+}
+md-switch {
+  --md-switch-selected-track-color: var(--md-sys-color-primary);
+  --md-switch-selected-handle-color: var(--md-sys-color-on-primary);
+}
+md-icon-button {
+  --md-icon-button-icon-color: var(--md-sys-color-on-surface-variant);
 }
 
 /* ── Scrollbar ── */
@@ -156,3 +275,6 @@ pre {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--md-sys-color-on-surface-variant);
 }
+
+/* ── Utility ── */
+h5, h6 { color: var(--md-sys-color-on-surface); margin-top: 0; }

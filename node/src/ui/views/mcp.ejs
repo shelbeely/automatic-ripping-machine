@@ -4,14 +4,26 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><%= typeof title !== 'undefined' ? title : 'ARM - MCP Apps' %></title>
-  <link href="https://cdn.jsdelivr.net/npm/beercss@3.7.14/dist/cdn/beer.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
   <link rel="stylesheet" href="/static/css/style.css">
+  <script type="importmap">
+  {
+    "imports": {
+      "@material/web/": "https://esm.run/@material/web@2.4.0/"
+    }
+  }
+  </script>
+  <script type="module">
+    import '@material/web/all.js';
+    import {styles as typescaleStyles} from '@material/web/typography/md-typescale-styles.js';
+    document.adoptedStyleSheets.push(typescaleStyles.styleSheet);
+  </script>
   <style>
     .mcp-app-frame {
       width: 100%;
       min-height: 400px;
-      border: 1px solid var(--outline);
+      border: 1px solid var(--md-sys-color-outline);
       border-radius: 0.75rem;
       background: #fff;
     }
@@ -30,35 +42,35 @@
 
     <div class="grid">
       <div class="s6 m3">
-        <article class="surface-container round" style="text-align:center;">
-          <h6>Configured</h6>
+        <div class="md3-card" style="text-align:center;">
+          <h6 class="md-typescale-title-medium">Configured</h6>
           <p style="font-size:1.5rem;"><%= configuredCount %></p>
-        </article>
+        </div>
       </div>
       <div class="s6 m3">
-        <article class="surface-container round" style="text-align:center;">
-          <h6>Connected</h6>
-          <p style="font-size:1.5rem;"><span class="chip <%= connectedCount > 0 ? 'tertiary' : '' %>"><%= connectedCount %></span></p>
-        </article>
+        <div class="md3-card" style="text-align:center;">
+          <h6 class="md-typescale-title-medium">Connected</h6>
+          <p style="font-size:1.5rem;"><span class="status-chip <%= connectedCount > 0 ? 'success' : '' %>"><%= connectedCount %></span></p>
+        </div>
       </div>
       <div class="s6 m3">
-        <article class="surface-container round" style="text-align:center;">
-          <h6>Tools</h6>
+        <div class="md3-card" style="text-align:center;">
+          <h6 class="md-typescale-title-medium">Tools</h6>
           <p style="font-size:1.5rem;"><%= tools.length %></p>
-        </article>
+        </div>
       </div>
       <div class="s6 m3">
-        <article class="surface-container round" style="text-align:center;">
-          <h6>App UIs</h6>
-          <p style="font-size:1.5rem;"><span class="chip <%= resources.filter(function(r) { return r.uri.startsWith('ui://'); }).length > 0 ? 'primary' : '' %>"><%= resources.filter(function(r) { return r.uri.startsWith('ui://'); }).length %></span></p>
-        </article>
+        <div class="md3-card" style="text-align:center;">
+          <h6 class="md-typescale-title-medium">App UIs</h6>
+          <p style="font-size:1.5rem;"><span class="status-chip <%= resources.filter(function(r) { return r.uri.startsWith('ui://'); }).length > 0 ? 'primary' : '' %>"><%= resources.filter(function(r) { return r.uri.startsWith('ui://'); }).length %></span></p>
+        </div>
       </div>
     </div>
 
     <% if (configs.length > 0) { %>
-      <article class="surface-container round" style="margin-top:1rem;">
-        <h6>Configured MCP Apps</h6>
-        <table class="stripes">
+      <div class="md3-card" style="margin-top:1rem;">
+        <h6 class="md-typescale-title-medium">Configured MCP Apps</h6>
+        <table class="md3-table">
           <thead>
             <tr><th>Name</th><th>Transport</th><th>Command / URL</th></tr>
           </thead>
@@ -72,24 +84,24 @@
             <% }); %>
           </tbody>
         </table>
-      </article>
+      </div>
     <% } %>
 
     <% var uiResources = resources.filter(function(r) { return r.uri.startsWith('ui://'); }); %>
     <% if (uiResources.length > 0) { %>
-      <article class="surface-container round" style="margin-top:1rem;">
+      <div class="md3-card" style="margin-top:1rem;">
         <div style="display:flex;justify-content:space-between;align-items:center;">
-          <h6>MCP App UIs</h6>
-          <span class="chip small primary"><%= uiResources.length %> available</span>
+          <h6 class="md-typescale-title-medium">MCP App UIs</h6>
+          <span class="status-chip primary"><%= uiResources.length %> available</span>
         </div>
         <p>Interactive UIs provided by connected MCP apps via <a href="https://github.com/modelcontextprotocol/ext-apps" target="_blank">SEP-1865 MCP Apps</a>.</p>
         <% uiResources.forEach(function(res, idx) { %>
           <div style="margin-bottom:0.75rem;">
-            <button class="small border" onclick="toggleTry('mcpApp<%= idx %>')">
-              <%= res.name || res.uri %> <span class="chip small"><%= res.appName %></span>
-            </button>
+            <md-outlined-button onclick="toggleTry('mcpApp<%= idx %>')">
+              <%= res.name || res.uri %> <span class="status-chip primary" style="margin-left:8px;"><%= res.appName %></span>
+            </md-outlined-button>
             <div id="mcpApp<%= idx %>" style="display:none;margin-top:0.5rem;">
-              <article class="surface-container round">
+              <div class="md3-card">
                 <p><%= res.description || '' %></p>
                 <iframe
                   class="mcp-app-frame"
@@ -99,42 +111,39 @@
                   data-resource-uri="<%= res.uri %>"
                 ></iframe>
                 <div style="margin-top:0.5rem;">
-                  <button class="small primary" onclick="loadMcpAppUi(<%= idx %>, '<%= res.appName %>', '<%= res.uri %>')">Load App UI</button>
+                  <md-filled-button onclick="loadMcpAppUi(<%= idx %>, '<%= res.appName %>', '<%= res.uri %>')">Load App UI</md-filled-button>
                 </div>
-              </article>
+              </div>
             </div>
           </div>
         <% }); %>
-      </article>
+      </div>
     <% } %>
 
     <% if (tools.length > 0) { %>
-      <article class="surface-container round" style="margin-top:1rem;">
-        <h6>Available Tools</h6>
-        <table class="stripes">
+      <div class="md3-card" style="margin-top:1rem;">
+        <h6 class="md-typescale-title-medium">Available Tools</h6>
+        <table class="md3-table">
           <thead>
             <tr><th>App</th><th>Tool</th><th>Description</th><th>Action</th></tr>
           </thead>
           <tbody>
             <% tools.forEach(function(tool, idx) { %>
               <tr>
-                <td><span class="chip small primary"><%= tool.appName %></span></td>
+                <td><span class="status-chip primary"><%= tool.appName %></span></td>
                 <td><code><%= tool.name %></code></td>
                 <td><%= tool.description || '' %></td>
                 <td>
-                  <button class="small border" onclick="toggleTry('toolCall<%= idx %>')">Try</button>
+                  <md-outlined-button onclick="toggleTry('toolCall<%= idx %>')">Try</md-outlined-button>
                 </td>
               </tr>
               <tr id="toolCall<%= idx %>" style="display:none;">
                 <td colspan="4">
                   <div style="padding:0.5rem;">
-                    <div class="field border round" style="font-family:monospace;">
-                      <input type="text" id="toolArgs<%= idx %>" placeholder='{"title": "Inception"}'>
-                      <label>Arguments (JSON)</label>
-                    </div>
-                    <button class="small primary" onclick="callMcpTool('<%= tool.name %>', <%= idx %>)">Call</button>
+                    <md-outlined-text-field id="toolArgs<%= idx %>" label="Arguments (JSON)" placeholder='{"title": "Inception"}' style="width:100%;font-family:monospace;margin-bottom:8px;"></md-outlined-text-field>
+                    <md-filled-button onclick="callMcpTool('<%= tool.name %>', <%= idx %>)">Call</md-filled-button>
                     <div class="tool-result" id="toolResult<%= idx %>" style="display:none;margin-top:0.5rem;">
-                      <pre class="surface-container round padding"></pre>
+                      <pre></pre>
                     </div>
                   </div>
                 </td>
@@ -142,25 +151,26 @@
             <% }); %>
           </tbody>
         </table>
-      </article>
+      </div>
     <% } else if (configs.length === 0) { %>
-      <article class="primary-container round padding" style="margin-top:1rem;">
-        <h6>No MCP Apps Configured</h6>
-        <p>Add MCP app servers to your <code>arm.yaml</code> configuration to extend ARM with external tools.</p>
-        <p><strong>Example: OMDB Movie Database</strong> (<a href="https://github.com/shelbeely/omdb-mcp-server" target="_blank">omdb-mcp-server</a>)</p>
-        <pre><code>MCP_APPS:
+      <div class="md3-alert info" style="margin-top:1rem;">
+        <i class="material-icons-outlined">info</i>
+        <div>
+          <h6>No MCP Apps Configured</h6>
+          <p>Add MCP app servers to your <code>arm.yaml</code> configuration to extend ARM with external tools.</p>
+          <p><strong>Example: OMDB Movie Database</strong> (<a href="https://github.com/shelbeely/omdb-mcp-server" target="_blank">omdb-mcp-server</a>)</p>
+          <pre><code>MCP_APPS:
   - name: omdb
     command: npx
     args: ["-y", "omdb-mcp-server"]
     env:
       OMDB_API_KEY: "your-omdb-api-key"</code></pre>
-        <p>Get a free OMDB API key at <a href="https://omdbapi.com/apikey.aspx" target="_blank">omdbapi.com</a>.</p>
-      </article>
+          <p>Get a free OMDB API key at <a href="https://omdbapi.com/apikey.aspx" target="_blank">omdbapi.com</a>.</p>
+        </div>
+      </div>
     <% } %>
   </div>
 
-  <script type="module" src="https://cdn.jsdelivr.net/npm/beercss@3.7.14/dist/cdn/beer.min.js"></script>
-  <script type="module" src="https://cdn.jsdelivr.net/npm/material-dynamic-colors@1.1.4/dist/cdn/material-dynamic-colors.min.js"></script>
   <script>
     function toggleTry(id) {
       var el = document.getElementById(id);
