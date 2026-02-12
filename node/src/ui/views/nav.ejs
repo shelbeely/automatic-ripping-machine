@@ -1,37 +1,76 @@
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-  <div class="container-fluid">
-    <a class="navbar-brand" href="/">
-      <img src="/static/img/arm_logo.png" alt="ARM" height="30" onerror="this.style.display='none'">
-      ARM
-    </a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-      <span class="navbar-toggler-icon"></span>
+<header class="fixed">
+  <nav>
+    <button class="circle transparent" data-ui="#nav-drawer">
+      <i>menu</i>
     </button>
-    <div class="collapse navbar-collapse" id="navbarNav">
-      <ul class="navbar-nav me-auto">
-        <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
-        <li class="nav-item"><a class="nav-link" href="/activerips">Active Rips</a></li>
-        <li class="nav-item"><a class="nav-link" href="/history">History</a></li>
-        <li class="nav-item"><a class="nav-link" href="/settings">Settings</a></li>
-        <li class="nav-item"><a class="nav-link" href="/logs">Logs</a></li>
-        <li class="nav-item"><a class="nav-link" href="/notifications">Notifications</a></li>
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">AI Tools</a>
-          <ul class="dropdown-menu">
-            <li><a class="dropdown-item" href="/ai">AI Dashboard</a></li>
-            <li><a class="dropdown-item" href="/mcp">MCP Server</a></li>
-            <li><a class="dropdown-item" href="/mcp/apps">MCP Apps</a></li>
-          </ul>
-        </li>
-      </ul>
-      <ul class="navbar-nav">
-        <% if (typeof isAuthenticated !== 'undefined' && isAuthenticated) { %>
-          <li class="nav-item"><a class="nav-link" href="/update_password">Change Password</a></li>
-          <li class="nav-item"><a class="nav-link" href="/logout">Logout</a></li>
-        <% } else { %>
-          <li class="nav-item"><a class="nav-link" href="/login">Login</a></li>
-        <% } %>
-      </ul>
-    </div>
-  </div>
+    <h6 class="max">ARM</h6>
+    <% if (typeof isAuthenticated !== 'undefined' && isAuthenticated) { %>
+      <a href="/update_password" class="button circle transparent" title="Change Password">
+        <i>key</i>
+      </a>
+      <a href="/logout" class="button circle transparent" title="Logout">
+        <i>logout</i>
+      </a>
+    <% } else { %>
+      <a href="/login" class="button circle transparent" title="Login">
+        <i>login</i>
+      </a>
+    <% } %>
+  </nav>
+</header>
+
+<nav id="nav-drawer" class="left drawer">
+  <header>
+    <nav>
+      <img src="/static/img/arm_logo.png" alt="ARM" height="30" onerror="this.style.display='none'">
+      <h5 class="max">ARM</h5>
+    </nav>
+  </header>
+
+  <a href="/">
+    <i>home</i>
+    <div>Home</div>
+  </a>
+  <a href="/activerips">
+    <i>album</i>
+    <div>Active Rips</div>
+  </a>
+  <a href="/history">
+    <i>history</i>
+    <div>History</div>
+  </a>
+  <a href="/settings">
+    <i>settings</i>
+    <div>Settings</div>
+  </a>
+  <a href="/logs">
+    <i>description</i>
+    <div>Logs</div>
+  </a>
+  <a href="/notifications">
+    <i>notifications</i>
+    <div>Notifications</div>
+  </a>
+
+  <div class="divider"></div>
+
+  <a href="/ai">
+    <i>psychology</i>
+    <div>AI Dashboard</div>
+  </a>
+  <a href="/mcp">
+    <i>hub</i>
+    <div>MCP Server</div>
+  </a>
+  <a href="/mcp/apps">
+    <i>apps</i>
+    <div>MCP Apps</div>
+  </a>
+
+  <div class="divider"></div>
+
+  <a href="/send">
+    <i>video_library</i>
+    <div>Completed Media</div>
+  </a>
 </nav>
