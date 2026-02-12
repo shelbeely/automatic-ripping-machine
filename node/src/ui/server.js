@@ -123,6 +123,13 @@ async function createApp(options = {}) {
   });
 
   // Initial setup — create admin account on first run
+  const rateLimit = require('express-rate-limit');
+  const setupLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 10,
+    message: 'Too many setup attempts, please try again later',
+  });
+
   app.get('/setup', async (req, res) => {
     const { User } = require('../models/user');
     const userCount = await User.count();
@@ -132,7 +139,7 @@ async function createApp(options = {}) {
     res.render('setup', { title: 'ARM - Initial Setup' });
   });
 
-  app.post('/setup', async (req, res) => {
+  app.post('/setup', setupLimiter, async (req, res) => {
     try {
       const { User } = require('../models/user');
       const userCount = await User.count();
@@ -152,6 +159,18 @@ async function createApp(options = {}) {
       logger.error(`Setup error: ${err.message}`);
       res.status(500).render('error', { title: 'Error', error: err.message });
     }
+  });
+
+  // MCP Server info page — shows server capabilities, tools, and resources
+  const { TOOLS: MCP_TOOLS, RESOURCES: MCP_RESOURCES, SERVER_INFO: MCP_SERVER_INFO, MCP_PROTOCOL_VERSION } = require('../mcp/mcp_server');
+  app.get('/mcp/server', (req, res) => {
+    res.render('mcpserver', {
+      title: 'ARM - MCP Server',
+      serverInfo: MCP_SERVER_INFO,
+      protocolVersion: MCP_PROTOCOL_VERSION,
+      tools: MCP_TOOLS,
+      resources: MCP_RESOURCES,
+    });
   });
 
   // MCP Server — exposes ARM as an MCP app that the web UI and external clients connect to

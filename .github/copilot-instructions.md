@@ -135,7 +135,7 @@ node/src/
     identify.js — MCP-based OMDB lookup → direct OMDB API → TMDB fallback
     utils.js    — MKV tagging, file operations
   ui/
-    views/      — 19 EJS templates (head.ejs shared partial + 16 pages + nav.ejs + layout.ejs)
+    views/      — 19 EJS templates (head.ejs shared partial + 17 pages + nav.ejs)
     public/     — Static assets (css/style.css, js/app.js)
     api.js      — REST API endpoints (/api/*)
     server.js   — Express app factory, route registration

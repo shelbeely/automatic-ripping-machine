@@ -30,17 +30,17 @@
         <span>No notifications</span>
       </div>
     <% } %>
+    <script>
+      function markRead(id) {
+        fetch('/notification/read/' + id, { method: 'POST' })
+          .then(r => r.json()).then(d => { if (d.success) location.reload(); });
+      }
+      function clearAll() {
+        fetch('/notification/clear', { method: 'POST' })
+          .then(r => r.json()).then(d => { if (d.success) location.reload(); });
+      }
+    </script>
   </div>
-  <script>
-    function markRead(id) {
-      fetch('/notification/read/' + id, { method: 'POST' })
-        .then(r => r.json()).then(d => { if (d.success) location.reload(); });
-    }
-    function clearAll() {
-      fetch('/notification/clear', { method: 'POST' })
-        .then(r => r.json()).then(d => { if (d.success) location.reload(); });
-    }
-  </script>
   </div>
   <script>
     var drawer = mdc.drawer.MDCDrawer.attachTo(document.querySelector('.mdc-drawer'));

@@ -122,6 +122,14 @@ describe('Server Routes', () => {
     expect(res.status).toBe(200);
     expect(res.body).toContain('MCP Apps');
   });
+
+  test('GET /mcp/server returns 200 with MCP Server info', async () => {
+    const res = await request('/mcp/server');
+    expect(res.status).toBe(200);
+    expect(res.body).toContain('MCP Server');
+    expect(res.body).toContain('arm-ripping-machine');
+    expect(res.body).toContain('identify_disc');
+  });
 });
 
 describe('AI Dashboard', () => {
