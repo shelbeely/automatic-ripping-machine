@@ -1,5 +1,6 @@
 const path = require('path');
 const fs = require('fs');
+const os = require('os');
 const { cleanForFilename, convertJobType, fixJobTitle, findLargestFile, escapeXml, generateMkvTagsXml, writeMkvTags } = require('../src/ripper/utils');
 
 describe('Ripper Utils', () => {
@@ -211,6 +212,28 @@ describe('Ripper Utils', () => {
       expect(xml).toContain('<Name>ACTOR</Name>');
       expect(xml).toContain('<String>Actor Name</String>');
     });
+
+    test('should prefer release_date over year for DATE_RELEASED', () => {
+      const credits = {
+        title: 'Test',
+        year: '2008',
+        release_date: '2008-07-18',
+      };
+      const xml = generateMkvTagsXml(credits);
+      const dateMatches = xml.match(/<Name>DATE_RELEASED<\/Name>/g);
+      expect(dateMatches).toHaveLength(1);
+      expect(xml).toContain('<String>2008-07-18</String>');
+    });
+
+    test('should use year when release_date is not available', () => {
+      const credits = {
+        title: 'Test',
+        year: '2008',
+      };
+      const xml = generateMkvTagsXml(credits);
+      expect(xml).toContain('<Name>DATE_RELEASED</Name>');
+      expect(xml).toContain('<String>2008</String>');
+    });
   });
 
   describe('writeMkvTags', () => {
@@ -225,13 +248,13 @@ describe('Ripper Utils', () => {
     });
 
     test('should return null when no AI agent configured and no credits', async () => {
-      const tmpFile = path.join(__dirname, 'tmp_tag_test.mkv');
+      const tmpFile = path.join(os.tmpdir(), `arm_test_${Date.now()}.mkv`);
       fs.writeFileSync(tmpFile, 'fake mkv');
       try {
         const result = await writeMkvTags(tmpFile, { config: {} });
         expect(result).toBeNull();
       } finally {
-        fs.unlinkSync(tmpFile);
+        if (fs.existsSync(tmpFile)) fs.unlinkSync(tmpFile);
       }
     });
   });

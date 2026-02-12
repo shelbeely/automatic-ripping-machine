@@ -5,7 +5,7 @@ const handbrake = require('./handbrake');
 const ffmpeg = require('./ffmpeg');
 const utils = require('./utils');
 const { createLogger } = require('./logger');
-const { createAgent, requireAgent, recommendTranscodeSettings, diagnoseError, fetchMediaCredits } = require('./ai_agent');
+const { createAgent, requireAgent, recommendTranscodeSettings, diagnoseError, fetchMediaCredits, MIN_CONFIDENCE_THRESHOLD } = require('./ai_agent');
 
 const logger = createLogger('arm_ripper');
 
@@ -127,7 +127,7 @@ async function ripVisualMedia(haveDupes, job, logfile, protection) {
       if (tagAgent && fs.existsSync(tagSourcePath)) {
         try {
           const credits = await fetchMediaCredits(tagAgent, job.title, job.year, job.video_type);
-          if (credits && (credits.confidence || 0) >= 0.5) {
+          if (credits && (credits.confidence || 0) >= MIN_CONFIDENCE_THRESHOLD) {
             logger.info(`AI fetched credits for "${job.title}" — tagging MKV files`);
             const mkvFiles = fs.readdirSync(tagSourcePath).filter((f) => f.endsWith('.mkv'));
             for (const mkvFile of mkvFiles) {

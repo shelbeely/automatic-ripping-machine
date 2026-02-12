@@ -415,8 +415,12 @@ function generateMkvTagsXml(credits) {
   if (credits.title) xml += tag('TITLE', credits.title);
   if (credits.original_title) xml += tag('ORIGINAL_TITLE', credits.original_title);
   if (credits.subtitle) xml += tag('SUBTITLE', credits.subtitle);
-  if (credits.year) xml += tag('DATE_RELEASED', credits.year);
-  if (credits.release_date) xml += tag('DATE_RELEASED', credits.release_date);
+  // Prefer release_date over year for DATE_RELEASED to avoid duplicates
+  if (credits.release_date) {
+    xml += tag('DATE_RELEASED', credits.release_date);
+  } else if (credits.year) {
+    xml += tag('DATE_RELEASED', credits.year);
+  }
   if (credits.synopsis) xml += tag('SYNOPSIS', credits.synopsis);
   if (credits.tagline) xml += tag('SUMMARY', credits.tagline);
   if (credits.language) xml += tag('LANGUAGE', credits.language);
