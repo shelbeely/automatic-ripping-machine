@@ -4,6 +4,7 @@ const axios = require('axios');
 const os = require('os');
 const { execSync } = require('child_process');
 const { createLogger } = require('./logger');
+const { createAgent, generateMediaFilename, MIN_CONFIDENCE_THRESHOLD } = require('./ai_agent');
 
 const logger = createLogger('utils');
 
@@ -104,23 +105,51 @@ function makeDir(dirPath) {
   }
 }
 
-function moveFiles(basePath, filename, job, isMainFeature = false) {
+async function moveFiles(basePath, filename, job, isMainFeature = false) {
   const videoType = convertJobType(job.video_type || '');
   const config = job.config || {};
   const completedPath = config.COMPLETED_PATH || '/home/arm/media/completed';
   const title = fixJobTitle(job);
 
   let finalDir;
-  if (videoType) {
-    finalDir = path.join(completedPath, videoType, cleanForFilename(title));
-  } else {
-    finalDir = path.join(completedPath, cleanForFilename(title));
+  let destFilename = filename;
+
+  // AI agent: generate proper media-library filenames
+  const agent = createAgent(config);
+  if (agent) {
+    try {
+      const ext = path.extname(filename);
+      const suggestion = await generateMediaFilename(agent, job, {
+        filename,
+        trackNumber: isMainFeature ? 0 : undefined,
+      });
+      if (suggestion && suggestion.confidence >= MIN_CONFIDENCE_THRESHOLD) {
+        if (suggestion.directory) {
+          finalDir = path.join(completedPath, suggestion.directory);
+          logger.info(`AI file naming: directory -> ${finalDir}`);
+        }
+        if (suggestion.filename) {
+          destFilename = suggestion.filename;
+          logger.info(`AI file naming: filename -> ${destFilename}`);
+        }
+      }
+    } catch (err) {
+      logger.warn(`AI file naming failed: ${err.message}`);
+    }
+  }
+
+  if (!finalDir) {
+    if (videoType) {
+      finalDir = path.join(completedPath, videoType, cleanForFilename(title));
+    } else {
+      finalDir = path.join(completedPath, cleanForFilename(title));
+    }
   }
 
   makeDir(finalDir);
 
   const srcFile = path.join(basePath, filename);
-  const destFile = path.join(finalDir, filename);
+  const destFile = path.join(finalDir, destFilename);
 
   if (fs.existsSync(srcFile)) {
     fs.copyFileSync(srcFile, destFile);

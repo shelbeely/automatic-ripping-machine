@@ -230,6 +230,122 @@ async function enhanceIdentification(job, config) {
   return job;
 }
 
+/**
+ * AI Agent: Recommend optimal transcode settings based on video metadata.
+ *
+ * Analyzes source video properties (resolution, codec, bitrate, audio tracks)
+ * and the target configuration to suggest HandBrake/FFmpeg arguments that
+ * balance quality and file size.
+ */
+async function recommendTranscodeSettings(agent, videoInfo, job) {
+  if (!agent) return null;
+
+  const config = job.config || {};
+  const context = [];
+  context.push(`Disc type: ${job.disctype || 'unknown'}`);
+  context.push(`Target format: ${config.DEST_EXT || 'mkv'}`);
+  context.push(`Transcoder: ${config.USE_FFMPEG ? 'FFmpeg' : 'HandBrake'}`);
+  if (config.HB_PRESET_DVD) context.push(`Current DVD preset: ${config.HB_PRESET_DVD}`);
+  if (config.HB_PRESET_BD) context.push(`Current Blu-ray preset: ${config.HB_PRESET_BD}`);
+
+  if (videoInfo) {
+    if (videoInfo.resolution) context.push(`Resolution: ${videoInfo.resolution}`);
+    if (videoInfo.codec) context.push(`Source codec: ${videoInfo.codec}`);
+    if (videoInfo.bitrate) context.push(`Source bitrate: ${videoInfo.bitrate}`);
+    if (videoInfo.duration) context.push(`Duration: ${videoInfo.duration}s`);
+    if (videoInfo.audioTracks) context.push(`Audio tracks: ${videoInfo.audioTracks}`);
+    if (videoInfo.subtitleTracks) context.push(`Subtitle tracks: ${videoInfo.subtitleTracks}`);
+  }
+
+  const messages = [
+    {
+      role: 'system',
+      content: 'You are a video transcoding expert. You recommend optimal settings for HandBrake and FFmpeg based on source media properties. Respond ONLY with valid JSON, no markdown formatting.',
+    },
+    {
+      role: 'user',
+      content: `Recommend optimal transcode settings for this video:\n\n${context.join('\n')}\n\nRespond with ONLY a JSON object (no code fences) with:\n- "preset": recommended HandBrake preset name (e.g. "HQ 1080p30 Surround")\n- "extraArgs": any additional CLI arguments as a string\n- "quality": recommended constant quality value (RF for HandBrake, CRF for FFmpeg)\n- "audioStrategy": how to handle audio tracks (e.g. "copy first, encode rest as AAC")\n- "reasoning": brief explanation of choices`,
+    },
+  ];
+
+  const response = await chatCompletion(agent, messages);
+  return parseAIResponse(response);
+}
+
+/**
+ * AI Agent: Diagnose ripping or transcoding errors from log output.
+ *
+ * Parses error messages and log snippets to provide human-readable
+ * explanations and actionable fix suggestions.
+ */
+async function diagnoseError(agent, errorLog, context = {}) {
+  if (!agent || !errorLog) return null;
+
+  const contextLines = [];
+  if (context.phase) contextLines.push(`Phase: ${context.phase}`);
+  if (context.tool) contextLines.push(`Tool: ${context.tool}`);
+  if (context.disctype) contextLines.push(`Disc type: ${context.disctype}`);
+  if (context.title) contextLines.push(`Title: ${context.title}`);
+
+  // Truncate very long logs to avoid token limits
+  const truncatedLog = errorLog.length > 2000
+    ? errorLog.substring(errorLog.length - 2000)
+    : errorLog;
+
+  const messages = [
+    {
+      role: 'system',
+      content: 'You are a disc ripping and video transcoding troubleshooting expert. You diagnose errors from MakeMKV, HandBrake, and FFmpeg. Respond ONLY with valid JSON, no markdown formatting.',
+    },
+    {
+      role: 'user',
+      content: `Diagnose this error:\n\n${contextLines.length > 0 ? contextLines.join('\n') + '\n\n' : ''}Error log:\n${truncatedLog}\n\nRespond with ONLY a JSON object (no code fences) with:\n- "diagnosis": clear explanation of what went wrong\n- "severity": "critical", "warning", or "info"\n- "suggestions": array of actionable fix suggestions\n- "retryable": boolean indicating if retrying might help`,
+    },
+  ];
+
+  const response = await chatCompletion(agent, messages, { maxTokens: 800 });
+  return parseAIResponse(response);
+}
+
+/**
+ * AI Agent: Generate proper media-library filenames.
+ *
+ * Produces Plex/Emby/Jellyfin compatible file and folder naming for
+ * movies (Title (Year)/Title (Year).ext) and TV series
+ * (Show Name/Season XX/Show Name - SXXEXX - Episode Title.ext).
+ */
+async function generateMediaFilename(agent, job, trackInfo = {}) {
+  if (!agent) return null;
+
+  const context = [];
+  if (job.title) context.push(`Title: ${job.title}`);
+  if (job.year) context.push(`Year: ${job.year}`);
+  if (job.video_type) context.push(`Type: ${job.video_type}`);
+  if (job.label) context.push(`Disc label: ${job.label}`);
+  if (job.disctype) context.push(`Disc type: ${job.disctype}`);
+  if (trackInfo.trackNumber !== undefined) context.push(`Track number: ${trackInfo.trackNumber}`);
+  if (trackInfo.duration) context.push(`Track duration: ${trackInfo.duration}s`);
+  if (trackInfo.filename) context.push(`Original filename: ${trackInfo.filename}`);
+
+  if (context.length === 0) return null;
+
+  const ext = (job.config && job.config.DEST_EXT) || 'mkv';
+
+  const messages = [
+    {
+      role: 'system',
+      content: 'You are a media library organization expert. You generate filenames compatible with Plex, Emby, and Jellyfin naming conventions. Respond ONLY with valid JSON, no markdown formatting.',
+    },
+    {
+      role: 'user',
+      content: `Generate a proper media filename for this content:\n\n${context.join('\n')}\nFile extension: ${ext}\n\nRespond with ONLY a JSON object (no code fences) with:\n- "filename": the recommended filename (e.g. "Movie Title (2024).mkv" or "Show Name - S01E03 - Episode Title.mkv")\n- "directory": the recommended directory path relative to the media root (e.g. "movies/Movie Title (2024)" or "tv/Show Name/Season 01")\n- "confidence": a number 0-1`,
+    },
+  ];
+
+  const response = await chatCompletion(agent, messages);
+  return parseAIResponse(response);
+}
+
 module.exports = {
   createAgent,
   chatCompletion,
@@ -238,6 +354,9 @@ module.exports = {
   resolveAmbiguousResults,
   identifyUnknownDisc,
   enhanceIdentification,
+  recommendTranscodeSettings,
+  diagnoseError,
+  generateMediaFilename,
   DEFAULT_API_URL,
   DEFAULT_MODEL,
   MIN_CONFIDENCE_THRESHOLD,

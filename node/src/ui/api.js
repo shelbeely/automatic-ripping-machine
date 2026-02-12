@@ -170,4 +170,87 @@ router.post('/ai/identify', async (req, res) => {
   }
 });
 
+// AI Agent: diagnose ripping/transcoding errors
+router.post('/ai/diagnose', async (req, res) => {
+  try {
+    const { errorLog, phase, tool, disctype, title } = req.body;
+    if (!errorLog) {
+      return res.status(400).json({ success: false, error: 'errorLog is required' });
+    }
+    const { loadConfig } = require('../config/config');
+    const { createAgent, diagnoseError } = require('../ripper/ai_agent');
+    const config = loadConfig();
+    const agent = createAgent(config);
+    if (!agent) {
+      return res.status(503).json({
+        success: false,
+        error: 'AI agent not configured. Set AI_API_KEY in configuration or ARM_AI_API_KEY environment variable.',
+      });
+    }
+    const result = await diagnoseError(agent, errorLog, { phase, tool, disctype, title });
+    if (result) {
+      res.json({ success: true, result });
+    } else {
+      res.json({ success: false, error: 'AI could not diagnose the error' });
+    }
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// AI Agent: recommend transcode settings
+router.post('/ai/transcode', async (req, res) => {
+  try {
+    const { videoInfo, disctype } = req.body;
+    const { loadConfig } = require('../config/config');
+    const { createAgent, recommendTranscodeSettings } = require('../ripper/ai_agent');
+    const config = loadConfig();
+    const agent = createAgent(config);
+    if (!agent) {
+      return res.status(503).json({
+        success: false,
+        error: 'AI agent not configured. Set AI_API_KEY in configuration or ARM_AI_API_KEY environment variable.',
+      });
+    }
+    const job = { disctype: disctype || 'dvd', config };
+    const result = await recommendTranscodeSettings(agent, videoInfo || {}, job);
+    if (result) {
+      res.json({ success: true, result });
+    } else {
+      res.json({ success: false, error: 'AI could not generate recommendations' });
+    }
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// AI Agent: generate media-library filename
+router.post('/ai/filename', async (req, res) => {
+  try {
+    const { title, year, videoType, label, disctype, trackInfo } = req.body;
+    if (!title && !label) {
+      return res.status(400).json({ success: false, error: 'title or label is required' });
+    }
+    const { loadConfig } = require('../config/config');
+    const { createAgent, generateMediaFilename } = require('../ripper/ai_agent');
+    const config = loadConfig();
+    const agent = createAgent(config);
+    if (!agent) {
+      return res.status(503).json({
+        success: false,
+        error: 'AI agent not configured. Set AI_API_KEY in configuration or ARM_AI_API_KEY environment variable.',
+      });
+    }
+    const job = { title, year, video_type: videoType, label, disctype: disctype || 'dvd', config };
+    const result = await generateMediaFilename(agent, job, trackInfo || {});
+    if (result) {
+      res.json({ success: true, result });
+    } else {
+      res.json({ success: false, error: 'AI could not generate filename' });
+    }
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 module.exports = router;

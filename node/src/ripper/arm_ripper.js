@@ -5,6 +5,7 @@ const handbrake = require('./handbrake');
 const ffmpeg = require('./ffmpeg');
 const utils = require('./utils');
 const { createLogger } = require('./logger');
+const { createAgent, recommendTranscodeSettings, diagnoseError } = require('./ai_agent');
 
 const logger = createLogger('arm_ripper');
 
@@ -50,6 +51,40 @@ async function moveFilesPost(transcodeOutPath, job) {
 async function startTranscode(job, logfile, rawInPath, transcodeOutPath, protection) {
   const config = job.config || {};
   utils.makeDir(transcodeOutPath);
+
+  // AI agent: recommend transcode settings before starting
+  const agent = createAgent(config);
+  if (agent) {
+    try {
+      const videoInfo = {};
+      if (fs.existsSync(rawInPath)) {
+        const files = fs.readdirSync(rawInPath).filter((f) => f.endsWith('.mkv'));
+        if (files.length > 0) {
+          const probeData = ffmpeg.probeSource(path.join(rawInPath, files[0]));
+          if (probeData && probeData.streams) {
+            const video = probeData.streams.find((s) => s.codec_type === 'video');
+            if (video) {
+              videoInfo.resolution = `${video.width}x${video.height}`;
+              videoInfo.codec = video.codec_name;
+              videoInfo.bitrate = video.bit_rate;
+            }
+            videoInfo.audioTracks = probeData.streams.filter((s) => s.codec_type === 'audio').length;
+            videoInfo.subtitleTracks = probeData.streams.filter((s) => s.codec_type === 'subtitle').length;
+          }
+          if (probeData && probeData.format) {
+            videoInfo.duration = probeData.format.duration;
+          }
+        }
+      }
+      const recommendation = await recommendTranscodeSettings(agent, videoInfo, job);
+      if (recommendation) {
+        logger.info(`AI transcode recommendation: preset=${recommendation.preset}, quality=${recommendation.quality}, reasoning=${recommendation.reasoning}`);
+        job.ai_transcode_recommendation = recommendation;
+      }
+    } catch (err) {
+      logger.warn(`AI transcode recommendation failed: ${err.message}`);
+    }
+  }
 
   await utils.databaseUpdater({ status: 'transcoding' }, job);
 
@@ -109,6 +144,29 @@ async function ripVisualMedia(haveDupes, job, logfile, protection) {
     job.status = 'success';
   } catch (err) {
     logger.error(`Rip failed: ${err.message}`);
+
+    // AI agent: diagnose the error
+    const agent = createAgent(config);
+    if (agent) {
+      try {
+        const diagnosis = await diagnoseError(agent, err.message, {
+          phase: job.status || 'unknown',
+          tool: config.USE_FFMPEG ? 'FFmpeg' : 'HandBrake/MakeMKV',
+          disctype: job.disctype,
+          title: job.title,
+        });
+        if (diagnosis) {
+          logger.info(`AI error diagnosis: ${diagnosis.diagnosis}`);
+          if (diagnosis.suggestions) {
+            logger.info(`AI suggestions: ${diagnosis.suggestions.join('; ')}`);
+          }
+          job.ai_error_diagnosis = diagnosis;
+        }
+      } catch (diagErr) {
+        logger.warn(`AI error diagnosis failed: ${diagErr.message}`);
+      }
+    }
+
     await utils.databaseUpdater({
       status: 'fail',
       errors: (job.errors || '') + err.message,

@@ -352,4 +352,252 @@ describe('AI Agent', () => {
       expect(result.title).toBe('Already Identified');
     });
   });
+
+  describe('recommendTranscodeSettings', () => {
+    const { recommendTranscodeSettings } = require('../src/ripper/ai_agent');
+
+    test('should return null when agent is null', async () => {
+      const result = await recommendTranscodeSettings(null, {}, {});
+      expect(result).toBeNull();
+    });
+
+    test('should recommend settings for a Blu-ray disc', async () => {
+      const mockResponse = JSON.stringify({
+        preset: 'HQ 1080p30 Surround',
+        extraArgs: '--encoder x265',
+        quality: 20,
+        audioStrategy: 'copy first track, encode rest as AAC',
+        reasoning: 'High quality 1080p source benefits from x265 encoding',
+      });
+
+      axios.post.mockResolvedValueOnce({
+        data: { choices: [{ message: { content: mockResponse } }] },
+      });
+
+      const agent = { apiKey: 'key', apiUrl: DEFAULT_API_URL, model: DEFAULT_MODEL };
+      const videoInfo = {
+        resolution: '1920x1080',
+        codec: 'h264',
+        bitrate: '30000000',
+        audioTracks: 3,
+        subtitleTracks: 2,
+        duration: '7200',
+      };
+      const job = { disctype: 'bluray', config: { DEST_EXT: 'mkv' } };
+
+      const result = await recommendTranscodeSettings(agent, videoInfo, job);
+
+      expect(result).not.toBeNull();
+      expect(result.preset).toBe('HQ 1080p30 Surround');
+      expect(result.quality).toBe(20);
+      expect(result.reasoning).toBeTruthy();
+    });
+
+    test('should handle empty video info', async () => {
+      const mockResponse = JSON.stringify({
+        preset: 'General/Fast 1080p30',
+        extraArgs: '',
+        quality: 22,
+        audioStrategy: 'copy all',
+        reasoning: 'No source info available, using safe defaults',
+      });
+
+      axios.post.mockResolvedValueOnce({
+        data: { choices: [{ message: { content: mockResponse } }] },
+      });
+
+      const agent = { apiKey: 'key', apiUrl: DEFAULT_API_URL, model: DEFAULT_MODEL };
+      const result = await recommendTranscodeSettings(agent, {}, { disctype: 'dvd', config: {} });
+
+      expect(result).not.toBeNull();
+      expect(result.preset).toBeTruthy();
+    });
+
+    test('should return null on API error', async () => {
+      axios.post.mockRejectedValueOnce(new Error('Network error'));
+
+      const agent = { apiKey: 'key', apiUrl: DEFAULT_API_URL, model: DEFAULT_MODEL };
+      const result = await recommendTranscodeSettings(agent, {}, { config: {} });
+      expect(result).toBeNull();
+    });
+  });
+
+  describe('diagnoseError', () => {
+    const { diagnoseError } = require('../src/ripper/ai_agent');
+
+    test('should return null when agent is null', async () => {
+      const result = await diagnoseError(null, 'error log');
+      expect(result).toBeNull();
+    });
+
+    test('should return null when errorLog is empty', async () => {
+      const agent = { apiKey: 'key', apiUrl: DEFAULT_API_URL, model: DEFAULT_MODEL };
+      const result = await diagnoseError(agent, '');
+      expect(result).toBeNull();
+    });
+
+    test('should diagnose a MakeMKV error', async () => {
+      const mockResponse = JSON.stringify({
+        diagnosis: 'The disc is copy-protected with a scheme MakeMKV cannot handle',
+        severity: 'critical',
+        suggestions: [
+          'Update MakeMKV to the latest version',
+          'Try using a different rip method (backup mode)',
+          'Check if MakeMKV license key is valid',
+        ],
+        retryable: true,
+      });
+
+      axios.post.mockResolvedValueOnce({
+        data: { choices: [{ message: { content: mockResponse } }] },
+      });
+
+      const agent = { apiKey: 'key', apiUrl: DEFAULT_API_URL, model: DEFAULT_MODEL };
+      const result = await diagnoseError(agent, 'Failed to open disc', {
+        phase: 'ripping',
+        tool: 'MakeMKV',
+        disctype: 'bluray',
+        title: 'Test Movie',
+      });
+
+      expect(result).not.toBeNull();
+      expect(result.diagnosis).toBeTruthy();
+      expect(result.severity).toBe('critical');
+      expect(result.suggestions).toBeInstanceOf(Array);
+      expect(result.suggestions.length).toBeGreaterThan(0);
+      expect(result.retryable).toBe(true);
+    });
+
+    test('should truncate very long error logs', async () => {
+      const longLog = 'x'.repeat(5000);
+      const mockResponse = JSON.stringify({
+        diagnosis: 'Error in log',
+        severity: 'warning',
+        suggestions: ['Check logs'],
+        retryable: false,
+      });
+
+      axios.post.mockResolvedValueOnce({
+        data: { choices: [{ message: { content: mockResponse } }] },
+      });
+
+      const agent = { apiKey: 'key', apiUrl: DEFAULT_API_URL, model: DEFAULT_MODEL };
+      const result = await diagnoseError(agent, longLog);
+
+      expect(result).not.toBeNull();
+      // Verify the API was called (it truncates internally)
+      expect(axios.post).toHaveBeenCalled();
+    });
+
+    test('should return null on API error', async () => {
+      axios.post.mockRejectedValueOnce(new Error('Timeout'));
+
+      const agent = { apiKey: 'key', apiUrl: DEFAULT_API_URL, model: DEFAULT_MODEL };
+      const result = await diagnoseError(agent, 'some error');
+      expect(result).toBeNull();
+    });
+  });
+
+  describe('generateMediaFilename', () => {
+    const { generateMediaFilename } = require('../src/ripper/ai_agent');
+
+    test('should return null when agent is null', async () => {
+      const result = await generateMediaFilename(null, {});
+      expect(result).toBeNull();
+    });
+
+    test('should return null when no context available', async () => {
+      const agent = { apiKey: 'key', apiUrl: DEFAULT_API_URL, model: DEFAULT_MODEL };
+      const result = await generateMediaFilename(agent, {});
+      expect(result).toBeNull();
+    });
+
+    test('should generate movie filename', async () => {
+      const mockResponse = JSON.stringify({
+        filename: 'The Dark Knight (2008).mkv',
+        directory: 'movies/The Dark Knight (2008)',
+        confidence: 0.95,
+      });
+
+      axios.post.mockResolvedValueOnce({
+        data: { choices: [{ message: { content: mockResponse } }] },
+      });
+
+      const agent = { apiKey: 'key', apiUrl: DEFAULT_API_URL, model: DEFAULT_MODEL };
+      const job = {
+        title: 'The Dark Knight',
+        year: '2008',
+        video_type: 'movie',
+        disctype: 'bluray',
+        config: { DEST_EXT: 'mkv' },
+      };
+      const result = await generateMediaFilename(agent, job);
+
+      expect(result).not.toBeNull();
+      expect(result.filename).toBe('The Dark Knight (2008).mkv');
+      expect(result.directory).toBe('movies/The Dark Knight (2008)');
+      expect(result.confidence).toBe(0.95);
+    });
+
+    test('should generate TV series filename', async () => {
+      const mockResponse = JSON.stringify({
+        filename: 'Breaking Bad - S01E01 - Pilot.mkv',
+        directory: 'tv/Breaking Bad/Season 01',
+        confidence: 0.85,
+      });
+
+      axios.post.mockResolvedValueOnce({
+        data: { choices: [{ message: { content: mockResponse } }] },
+      });
+
+      const agent = { apiKey: 'key', apiUrl: DEFAULT_API_URL, model: DEFAULT_MODEL };
+      const job = {
+        title: 'Breaking Bad',
+        video_type: 'series',
+        disctype: 'dvd',
+        label: 'BREAKING_BAD_S1D1',
+        config: { DEST_EXT: 'mkv' },
+      };
+      const result = await generateMediaFilename(agent, job, { trackNumber: 1 });
+
+      expect(result).not.toBeNull();
+      expect(result.filename).toContain('Breaking Bad');
+      expect(result.directory).toContain('Season');
+    });
+
+    test('should include track info in request', async () => {
+      const mockResponse = JSON.stringify({
+        filename: 'Movie Title (2024).mkv',
+        directory: 'movies/Movie Title (2024)',
+        confidence: 0.9,
+      });
+
+      axios.post.mockResolvedValueOnce({
+        data: { choices: [{ message: { content: mockResponse } }] },
+      });
+
+      const agent = { apiKey: 'key', apiUrl: DEFAULT_API_URL, model: DEFAULT_MODEL };
+      const job = { title: 'Movie Title', year: '2024', config: { DEST_EXT: 'mkv' } };
+      await generateMediaFilename(agent, job, {
+        trackNumber: 3,
+        duration: 7200,
+        filename: 'title_t03.mkv',
+      });
+
+      expect(axios.post).toHaveBeenCalled();
+      const callArgs = axios.post.mock.calls[axios.post.mock.calls.length - 1];
+      const messages = callArgs[1].messages;
+      const userMessage = messages.find((m) => m.role === 'user').content;
+      expect(userMessage).toContain('Track number: 3');
+      expect(userMessage).toContain('Track duration: 7200s');
+    });
+
+    test('should return null on API error', async () => {
+      axios.post.mockRejectedValueOnce(new Error('API error'));
+
+      const agent = { apiKey: 'key', apiUrl: DEFAULT_API_URL, model: DEFAULT_MODEL };
+      const result = await generateMediaFilename(agent, { title: 'Test' });
+      expect(result).toBeNull();
+    });
+  });
 });
