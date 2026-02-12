@@ -187,12 +187,41 @@ async function callToolAuto(toolName, args = {}) {
 
 /**
  * Get a list of all available tools across all connected MCP apps.
+ * Includes _meta if present on the tool definition.
  */
 function listAllTools() {
   const all = [];
   for (const [appName, app] of connectedApps) {
     for (const tool of app.tools) {
-      all.push({ appName, name: tool.name, description: tool.description });
+      const entry = { appName, name: tool.name, description: tool.description };
+      if (tool._meta) entry._meta = tool._meta;
+      all.push(entry);
+    }
+  }
+  return all;
+}
+
+/**
+ * List all resources across all connected MCP apps.
+ * Returns an array of { appName, uri, name, description, mimeType }.
+ */
+async function listAllResources() {
+  const all = [];
+  for (const [appName, app] of connectedApps) {
+    try {
+      const result = await app.client.listResources();
+      const resources = (result && result.resources) || [];
+      for (const resource of resources) {
+        all.push({
+          appName,
+          uri: resource.uri,
+          name: resource.name || '',
+          description: resource.description || '',
+          mimeType: resource.mimeType || '',
+        });
+      }
+    } catch (err) {
+      logger.debug(`Could not list resources for MCP app "${appName}": ${err.message}`);
     }
   }
   return all;
@@ -254,6 +283,7 @@ module.exports = {
   callToolAuto,
   findTool,
   listAllTools,
+  listAllResources,
   readResource,
   disconnectAll,
   getConnectedCount,

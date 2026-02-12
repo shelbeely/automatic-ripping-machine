@@ -2,6 +2,7 @@ const {
   parseMcpAppsConfig,
   hasMcpAppsConfigured,
   listAllTools,
+  listAllResources,
   getConnectedCount,
   findTool,
 } = require('../src/mcp/mcp_client');
@@ -101,6 +102,13 @@ describe('MCP Client', () => {
     });
   });
 
+  describe('listAllResources', () => {
+    test('should return empty array when no apps connected', async () => {
+      const resources = await listAllResources();
+      expect(resources).toEqual([]);
+    });
+  });
+
   describe('getConnectedCount', () => {
     test('should return 0 when no apps connected', () => {
       expect(getConnectedCount()).toBe(0);
@@ -110,6 +118,10 @@ describe('MCP Client', () => {
   describe('findTool', () => {
     test('should return null when no apps connected', () => {
       expect(findTool('some-tool')).toBeNull();
+    });
+
+    test('should return null for get_movie_details when no MCP apps connected', () => {
+      expect(findTool('get_movie_details')).toBeNull();
     });
   });
 });

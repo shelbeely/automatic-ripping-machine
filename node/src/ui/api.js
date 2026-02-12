@@ -7,7 +7,7 @@ const { Track } = require('../models/track');
 const { Notification } = require('../models/notifications');
 const { Config } = require('../models/config_model');
 const { createLogger } = require('../ripper/logger');
-const { callToolAuto, listAllTools } = require('../mcp/mcp_client');
+const { callToolAuto, listAllTools, listAllResources, readResource } = require('../mcp/mcp_client');
 
 const logger = createLogger('api');
 
@@ -259,6 +259,40 @@ router.get('/mcp/tools', (req, res) => {
   try {
     const tools = listAllTools();
     res.json({ success: true, tools });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// MCP Apps: list all resources from connected MCP apps
+router.get('/mcp/resources', async (req, res) => {
+  try {
+    const resources = await listAllResources();
+    res.json({ success: true, resources });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// MCP Apps: read a resource from a connected MCP app
+router.get('/mcp/resource', async (req, res) => {
+  try {
+    const { appName, uri } = req.query;
+    if (!appName || !uri) {
+      return res.status(400).json({ success: false, error: 'appName and uri are required' });
+    }
+    const result = await readResource(appName, uri);
+    if (result && result.contents && result.contents.length > 0) {
+      const content = result.contents[0];
+      const mimeType = content.mimeType || 'text/plain';
+      if (mimeType.includes('html')) {
+        res.type('text/html').send(content.text);
+      } else {
+        res.json({ success: true, content });
+      }
+    } else {
+      res.json({ success: false, error: 'Resource not found or empty' });
+    }
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }

@@ -143,18 +143,25 @@ MCP_APPS:
 
 The OMDB MCP server will be automatically launched and connected when ARM starts. Its tools will be available in the MCP Apps page and through the API.
 
+When the OMDB MCP server is connected, ARM will **automatically use it for metadata lookup** during disc identification — before falling back to direct OMDB API calls. This means you don't need to set the `OMDB_API_KEY` in arm.yaml separately; the MCP server handles its own API key.
+
+The OMDB MCP server also supports **MCP Apps (SEP-1865)** — it provides an interactive movie search UI that renders directly in ARM's MCP Apps page. You can search for movies and see rich, styled results in the browser.
+
 ### How It Works
 
 1. At startup, ARM connects to each configured MCP app via stdio transport
-2. ARM discovers the tools each app provides
+2. ARM discovers the tools and UI resources each app provides
 3. Tools from all connected apps are available through the web UI and API
 4. ARM can call tools across connected apps as needed
+5. For disc identification, ARM tries MCP-based metadata lookup first
 
 ### API Endpoints
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | GET | `/api/mcp/tools` | List all tools from all connected MCP apps |
+| GET | `/api/mcp/resources` | List all resources (including UI resources) from connected apps |
+| GET | `/api/mcp/resource?appName=...&uri=...` | Read a specific resource from a connected app |
 | POST | `/api/mcp/call` | Call a tool on a specific MCP app |
 
 **List MCP tools:**
@@ -162,27 +169,47 @@ The OMDB MCP server will be automatically launched and connected when ARM starts
 GET /api/mcp/tools
 ```
 
+**List MCP resources:**
+```
+GET /api/mcp/resources
+```
+
+**Read MCP resource (e.g., App UI):**
+```
+GET /api/mcp/resource?appName=omdb&uri=ui://omdb/movie-search.html
+```
+
 **Call an MCP tool:**
 ```json
 POST /api/mcp/call
 {
-  "appName": "media-db",
-  "toolName": "search_movie",
-  "arguments": { "query": "Star Wars" }
+  "toolName": "get_movie_details",
+  "args": { "title": "Inception" }
 }
 ```
+
+### MCP Apps (SEP-1865) Support
+
+ARM's web UI acts as an [MCP Apps host](https://github.com/modelcontextprotocol/ext-apps) implementing the SEP-1865 lifecycle. Connected MCP servers that provide `ui://` resources will have their UIs rendered in sandboxed iframes on the MCP Apps page.
+
+**Supported lifecycle:**
+- `ui/initialize` — ARM sends host context (theme, protocol version) to the app UI
+- `ui/notifications/tool-input` — Tool arguments forwarded to the UI
+- `ui/notifications/tool-result` — Tool results forwarded to the UI for rendering
+- `ui/resource-teardown` — Clean teardown when navigating away
 
 ### Web UI
 
 The MCP Apps page (accessible from **AI Tools > MCP Apps** in the navigation) shows:
 
 - Status of all configured MCP apps (connected/disconnected)
-- Available tools from each connected app
-- Ability to test tool calls from the browser
+- Available tools from each connected app with "Try" buttons for interactive testing
+- MCP App UIs (SEP-1865) rendered in sandboxed iframes for connected apps that provide `ui://` resources
+- Number of available App UIs as a dashboard stat
 
 ## Testing
 
 ```bash
 cd node
-npx jest test/mcp_server.test.js test/mcp_client.test.js --forceExit
+npx jest test/mcp_server.test.js test/mcp_client.test.js test/ripper_identify.test.js --forceExit
 ```
