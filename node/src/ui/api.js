@@ -142,4 +142,32 @@ router.get('/logs/:jobId', async (req, res) => {
   }
 });
 
+// AI Agent: identify disc title from label
+router.post('/ai/identify', async (req, res) => {
+  try {
+    const { label, disctype } = req.body;
+    if (!label) {
+      return res.status(400).json({ success: false, error: 'label is required' });
+    }
+    const { loadConfig } = require('../config/config');
+    const { createAgent, parseDiscLabel } = require('../ripper/ai_agent');
+    const config = loadConfig();
+    const agent = createAgent(config);
+    if (!agent) {
+      return res.status(503).json({
+        success: false,
+        error: 'AI agent not configured. Set AI_API_KEY in arm.yaml or ARM_AI_API_KEY env var.',
+      });
+    }
+    const result = await parseDiscLabel(agent, label, disctype || 'unknown');
+    if (result) {
+      res.json({ success: true, result });
+    } else {
+      res.json({ success: false, error: 'AI could not parse the label' });
+    }
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 module.exports = router;

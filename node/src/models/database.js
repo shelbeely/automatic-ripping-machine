@@ -127,6 +127,10 @@ async function initializeDatabase(dbPath = DEFAULT_DB_PATH) {
       table.string('FFMPEG_PRE_ARGS_BD');
       table.integer('MAX_CONCURRENT_TRANSCODES').defaultTo(1);
       table.boolean('DATE_ADDED_TO_TITLE').defaultTo(false);
+      // AI Agent settings
+      table.string('AI_API_KEY');
+      table.string('AI_API_URL');
+      table.string('AI_MODEL');
     });
   }
 

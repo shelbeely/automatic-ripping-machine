@@ -8,6 +8,7 @@ const utils = require('./utils');
 const musicBrainz = require('./music_brainz');
 const processHandler = require('./process_handler');
 const logger = require('./logger');
+const aiAgent = require('./ai_agent');
 
 module.exports = {
   main,
@@ -20,4 +21,5 @@ module.exports = {
   musicBrainz,
   processHandler,
   logger,
+  aiAgent,
 };

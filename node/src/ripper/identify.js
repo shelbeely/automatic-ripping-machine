@@ -3,6 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const axios = require('axios');
 const { createLogger } = require('./logger');
+const { enhanceIdentification } = require('./ai_agent');
 
 const logger = createLogger('identify');
 
@@ -147,6 +148,13 @@ async function identify(job) {
   // Lookup metadata for video discs
   if (['dvd', 'bluray'].includes(job.disctype)) {
     await getVideoDetails(job);
+  }
+
+  // AI-enhanced identification: try to improve title if standard lookups
+  // didn't produce a nice title, or parse cryptic disc labels
+  const config = job.config || {};
+  if (!job.hasnicetitle || !job.title) {
+    await enhanceIdentification(job, config);
   }
 
   logger.info(`Identified: ${job.disctype} - ${job.title || 'unknown'}`);

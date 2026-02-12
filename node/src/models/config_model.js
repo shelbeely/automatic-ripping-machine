@@ -39,6 +39,10 @@ class Config {
     this.FFMPEG_PRE_ARGS_BD = data.FFMPEG_PRE_ARGS_BD || '';
     this.MAX_CONCURRENT_TRANSCODES = data.MAX_CONCURRENT_TRANSCODES || 1;
     this.DATE_ADDED_TO_TITLE = data.DATE_ADDED_TO_TITLE || false;
+    // AI Agent settings
+    this.AI_API_KEY = data.AI_API_KEY || '';
+    this.AI_API_URL = data.AI_API_URL || '';
+    this.AI_MODEL = data.AI_MODEL || '';
   }
 
   toJSON() {
