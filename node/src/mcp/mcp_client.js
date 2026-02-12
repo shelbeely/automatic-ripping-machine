@@ -112,8 +112,8 @@ async function initializeMcpApps(config) {
     if (appConfig.command) {
       connection = await connectStdioApp(appConfig);
     } else if (appConfig.url) {
-      // HTTP/SSE transport — log as future capability
-      logger.warn(`MCP app "${appConfig.name}" uses URL transport which requires SSE — not yet supported in this version`);
+      // HTTP/SSE transport — use stdio transport as an alternative for now
+      logger.warn(`MCP app "${appConfig.name}" uses URL transport (HTTP/SSE) which is not yet supported. Use "command" with stdio transport instead.`);
       continue;
     } else {
       logger.warn(`MCP app "${appConfig.name}" has no command or url, skipping`);
