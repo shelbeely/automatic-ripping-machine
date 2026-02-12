@@ -74,6 +74,7 @@ MCP-compatible apps can connect to it as well.
 - `diagnose_error` — AI-powered error diagnosis
 - `recommend_transcode` — AI transcode settings optimizer
 - `generate_filename` — Plex/Emby/Jellyfin filename generator
+- `fetch_credits` — AI-powered movie/TV credits and metadata
 - `get_system_info` — System hardware/software info
 
 **Available MCP Resources:**
@@ -102,6 +103,11 @@ Generates Plex/Emby/Jellyfin-compatible filenames and directory structures:
 - Movies: `movies/Title (Year)/Title (Year).mkv`
 - TV: `tv/Show Name/Season 01/Show Name - S01E03 - Episode Title.mkv`
 
+### 5. Credits & Metadata Tagging
+Fetches structured credits (director, cast, genre, plot) and writes
+Matroska XML tags to MKV files via `mkvpropedit` for rich media library
+metadata.
+
 ## Web UI
 
 The web UI is accessible at `http://localhost:8080` and provides:
@@ -109,7 +115,7 @@ The web UI is accessible at `http://localhost:8080` and provides:
 - Job history and details
 - AI tools dashboard
 - MCP server info and connected MCP apps status
-- Settings, logs, and notifications
+- Settings, logs, notifications, and completed media browser
 
 ## Testing
 
@@ -131,6 +137,7 @@ arm_ripper.js
     ├→ MakeMKV (decrypt & extract)
     ├→ AI: recommend transcode settings
     ├→ HandBrake/FFmpeg (transcode)
+    ├→ AI: fetch credits + MKV metadata tagging
     ├→ AI: generate media-library filenames
     ├→ Move files to organized media library
     └→ On error: AI diagnosis with fix suggestions
