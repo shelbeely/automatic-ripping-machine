@@ -10,20 +10,20 @@ document.addEventListener('DOMContentLoaded', function() {
           var tbody = document.querySelector('table tbody');
           if (!tbody) return;
           if (data.jobs.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted">No active rips at this time.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="7">No active rips at this time.</td></tr>';
             return;
           }
           var html = '';
           data.jobs.forEach(function(job) {
+            var chipClass = job.status === 'ripping' ? 'primary' : (job.status === 'transcoding' ? 'secondary' : 'tertiary');
             html += '<tr>';
             html += '<td><a href="/jobdetail?job_id=' + job.job_id + '">' + job.job_id + '</a></td>';
             html += '<td>' + (job.title || 'Unknown') + '</td>';
             html += '<td>' + (job.disctype || '') + '</td>';
-            html += '<td><span class="badge bg-primary">' + (job.status || '') + '</span></td>';
+            html += '<td><span class="chip small ' + chipClass + '">' + (job.status || '') + '</span></td>';
             html += '<td>' + (job.progress || 'N/A') + '</td>';
-            html += '<td>' + (job.eta || 'N/A') + '</td>';
             html += '<td>' + (job.start_time ? new Date(job.start_time).toLocaleString() : '') + '</td>';
-            html += '<td><a href="/jobdetail?job_id=' + job.job_id + '" class="btn btn-sm btn-outline-primary">Details</a></td>';
+            html += '<td><a href="/jobdetail?job_id=' + job.job_id + '" class="button small border">Details</a></td>';
             html += '</tr>';
           });
           tbody.innerHTML = html;
