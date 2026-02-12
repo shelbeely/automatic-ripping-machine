@@ -251,27 +251,30 @@
       try {
         var msg = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
         if (!msg || !msg.method) {
-          // Check if it's a response (has id and result) — ignore
+          // Ignore non-MCP messages and JSON-RPC responses (have id+result but no method)
           return;
         }
+
+        // Only process messages from known MCP App iframes
+        var sourceFrame = findSourceFrame(event.source);
+        if (!sourceFrame) return;
 
         switch (msg.method) {
           case 'ui/initialize':
             // Respond with host context and protocol version
-            var sourceFrame = findSourceFrame(event.source);
-            if (sourceFrame) {
-              var isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-              event.source.postMessage(JSON.stringify({
-                jsonrpc: '2.0',
-                id: msg.id,
-                result: {
-                  protocolVersion: '2026-01-26',
-                  hostInfo: { name: 'arm-ripping-machine', version: '1.0.0' },
-                  hostContext: {
-                    theme: isDark ? 'dark' : 'light'
-                  }
+            var isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            // srcdoc iframes have null origin, so '*' is required for postMessage
+            event.source.postMessage(JSON.stringify({
+              jsonrpc: '2.0',
+              id: msg.id,
+              result: {
+                protocolVersion: '2026-01-26',
+                hostInfo: { name: 'arm-ripping-machine', version: '1.0.0' },
+                hostContext: {
+                  theme: isDark ? 'dark' : 'light'
                 }
-              }), '*');
+              }
+            }), '*');
             }
             break;
 
@@ -298,6 +301,7 @@
     }
 
     // Forward a tool result to any MCP App iframes that are listening
+    // srcdoc iframes have null origin, so '*' is required for postMessage
     function forwardToolResultToApps(toolName, result) {
       for (var uri in mcpAppFrames) {
         var frame = mcpAppFrames[uri];
@@ -309,7 +313,7 @@
               params: result
             }), '*');
           } catch (e) {
-            // ignore
+            // ignore postMessage errors for detached frames
           }
         }
       }
