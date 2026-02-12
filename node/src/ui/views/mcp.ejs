@@ -11,159 +11,141 @@
     .mcp-app-frame {
       width: 100%;
       min-height: 400px;
-      border: 1px solid #dee2e6;
-      border-radius: 0.375rem;
+      border: 1px solid var(--outline);
+      border-radius: 0.75rem;
       background: #fff;
     }
-    .tool-call-form .form-control { font-family: monospace; font-size: 0.9rem; }
     .tool-result { max-height: 400px; overflow-y: auto; }
     .tool-result pre { white-space: pre-wrap; word-break: break-word; }
-    .ui-tool-badge { cursor: pointer; }
   </style>
 </head>
 <body class="dark">
   <%- include('nav') %>
-  <div class="container-fluid mt-3">
-    <h2>MCP Apps</h2>
-    <p class="text-muted">
+  <div class="page">
+    <h5>MCP Apps</h5>
+    <p>
       ARM uses the <a href="https://modelcontextprotocol.io" target="_blank">Model Context Protocol (MCP)</a>
       to connect to external tool servers — media databases, file organizers, metadata providers, and more.
     </p>
 
-    <div class="row mt-3">
-      <div class="col-md-3">
-        <div class="card">
-          <div class="card-body text-center">
-            <h5 class="card-title">Configured</h5>
-            <p class="display-6"><%= configuredCount %></p>
-          </div>
-        </div>
+    <div class="grid">
+      <div class="s6 m3">
+        <article class="surface-container round" style="text-align:center;">
+          <h6>Configured</h6>
+          <p style="font-size:1.5rem;"><%= configuredCount %></p>
+        </article>
       </div>
-      <div class="col-md-3">
-        <div class="card">
-          <div class="card-body text-center">
-            <h5 class="card-title">Connected</h5>
-            <p class="display-6 <%= connectedCount > 0 ? 'text-success' : 'text-muted' %>"><%= connectedCount %></p>
-          </div>
-        </div>
+      <div class="s6 m3">
+        <article class="surface-container round" style="text-align:center;">
+          <h6>Connected</h6>
+          <p style="font-size:1.5rem;"><span class="chip <%= connectedCount > 0 ? 'tertiary' : '' %>"><%= connectedCount %></span></p>
+        </article>
       </div>
-      <div class="col-md-3">
-        <div class="card">
-          <div class="card-body text-center">
-            <h5 class="card-title">Tools</h5>
-            <p class="display-6"><%= tools.length %></p>
-          </div>
-        </div>
+      <div class="s6 m3">
+        <article class="surface-container round" style="text-align:center;">
+          <h6>Tools</h6>
+          <p style="font-size:1.5rem;"><%= tools.length %></p>
+        </article>
       </div>
-      <div class="col-md-3">
-        <div class="card">
-          <div class="card-body text-center">
-            <h5 class="card-title">App UIs</h5>
-            <p class="display-6 <%= resources.filter(function(r) { return r.uri.startsWith('ui://'); }).length > 0 ? 'text-info' : 'text-muted' %>"><%= resources.filter(function(r) { return r.uri.startsWith('ui://'); }).length %></p>
-          </div>
-        </div>
+      <div class="s6 m3">
+        <article class="surface-container round" style="text-align:center;">
+          <h6>App UIs</h6>
+          <p style="font-size:1.5rem;"><span class="chip <%= resources.filter(function(r) { return r.uri.startsWith('ui://'); }).length > 0 ? 'primary' : '' %>"><%= resources.filter(function(r) { return r.uri.startsWith('ui://'); }).length %></span></p>
+        </article>
       </div>
     </div>
 
     <% if (configs.length > 0) { %>
-      <div class="card mt-4">
-        <div class="card-header"><h5>Configured MCP Apps</h5></div>
-        <div class="card-body">
-          <table class="table table-striped">
-            <thead>
-              <tr><th>Name</th><th>Transport</th><th>Command / URL</th></tr>
-            </thead>
-            <tbody>
-              <% configs.forEach(function(cfg) { %>
-                <tr>
-                  <td><%= cfg.name %></td>
-                  <td><%= cfg.command ? 'stdio' : 'http' %></td>
-                  <td><code><%= cfg.command ? (cfg.command + ' ' + (cfg.args || []).join(' ')) : cfg.url %></code></td>
-                </tr>
-              <% }); %>
-            </tbody>
-          </table>
-        </div>
-      </div>
+      <article class="surface-container round" style="margin-top:1rem;">
+        <h6>Configured MCP Apps</h6>
+        <table class="stripes">
+          <thead>
+            <tr><th>Name</th><th>Transport</th><th>Command / URL</th></tr>
+          </thead>
+          <tbody>
+            <% configs.forEach(function(cfg) { %>
+              <tr>
+                <td><%= cfg.name %></td>
+                <td><%= cfg.command ? 'stdio' : 'http' %></td>
+                <td><code><%= cfg.command ? (cfg.command + ' ' + (cfg.args || []).join(' ')) : cfg.url %></code></td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </article>
     <% } %>
 
     <% var uiResources = resources.filter(function(r) { return r.uri.startsWith('ui://'); }); %>
     <% if (uiResources.length > 0) { %>
-      <div class="card mt-4">
-        <div class="card-header d-flex justify-content-between align-items-center">
-          <h5 class="mb-0">MCP App UIs</h5>
-          <span class="badge bg-info"><%= uiResources.length %> available</span>
+      <article class="surface-container round" style="margin-top:1rem;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <h6>MCP App UIs</h6>
+          <span class="chip small primary"><%= uiResources.length %> available</span>
         </div>
-        <div class="card-body">
-          <p class="text-muted">Interactive UIs provided by connected MCP apps via <a href="https://github.com/modelcontextprotocol/ext-apps" target="_blank">SEP-1865 MCP Apps</a>.</p>
-          <% uiResources.forEach(function(res, idx) { %>
-            <div class="mb-3">
-              <button class="btn btn-outline-primary" type="button" data-bs-toggle="collapse" data-bs-target="#mcpApp<%= idx %>">
-                <%= res.name || res.uri %> <span class="badge bg-secondary"><%= res.appName %></span>
-              </button>
-              <div class="collapse mt-2" id="mcpApp<%= idx %>">
-                <div class="card card-body">
-                  <p class="text-muted mb-2"><%= res.description || '' %></p>
-                  <iframe
-                    class="mcp-app-frame"
-                    id="mcpAppFrame<%= idx %>"
-                    sandbox="allow-scripts"
-                    data-app-name="<%= res.appName %>"
-                    data-resource-uri="<%= res.uri %>"
-                  ></iframe>
-                  <div class="mt-2">
-                    <button class="btn btn-sm btn-primary" onclick="loadMcpAppUi(<%= idx %>, '<%= res.appName %>', '<%= res.uri %>')">Load App UI</button>
-                  </div>
+        <p>Interactive UIs provided by connected MCP apps via <a href="https://github.com/modelcontextprotocol/ext-apps" target="_blank">SEP-1865 MCP Apps</a>.</p>
+        <% uiResources.forEach(function(res, idx) { %>
+          <div style="margin-bottom:0.75rem;">
+            <button class="small border" onclick="toggleTry('mcpApp<%= idx %>')">
+              <%= res.name || res.uri %> <span class="chip small"><%= res.appName %></span>
+            </button>
+            <div id="mcpApp<%= idx %>" style="display:none;margin-top:0.5rem;">
+              <article class="surface-container round">
+                <p><%= res.description || '' %></p>
+                <iframe
+                  class="mcp-app-frame"
+                  id="mcpAppFrame<%= idx %>"
+                  sandbox="allow-scripts"
+                  data-app-name="<%= res.appName %>"
+                  data-resource-uri="<%= res.uri %>"
+                ></iframe>
+                <div style="margin-top:0.5rem;">
+                  <button class="small primary" onclick="loadMcpAppUi(<%= idx %>, '<%= res.appName %>', '<%= res.uri %>')">Load App UI</button>
                 </div>
-              </div>
+              </article>
             </div>
-          <% }); %>
-        </div>
-      </div>
+          </div>
+        <% }); %>
+      </article>
     <% } %>
 
     <% if (tools.length > 0) { %>
-      <div class="card mt-4">
-        <div class="card-header"><h5>Available Tools</h5></div>
-        <div class="card-body">
-          <table class="table table-striped">
-            <thead>
-              <tr><th>App</th><th>Tool</th><th>Description</th><th>Action</th></tr>
-            </thead>
-            <tbody>
-              <% tools.forEach(function(tool, idx) { %>
-                <tr>
-                  <td><span class="badge bg-primary"><%= tool.appName %></span></td>
-                  <td><code><%= tool.name %></code></td>
-                  <td><%= tool.description || '' %></td>
-                  <td>
-                    <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#toolCall<%= idx %>">
-                      Try
-                    </button>
-                  </td>
-                </tr>
-                <tr class="collapse" id="toolCall<%= idx %>">
-                  <td colspan="4">
-                    <div class="tool-call-form p-2">
-                      <div class="mb-2">
-                        <label class="form-label">Arguments (JSON)</label>
-                        <input type="text" class="form-control form-control-sm" id="toolArgs<%= idx %>" placeholder='{"title": "Inception"}'>
-                      </div>
-                      <button class="btn btn-sm btn-primary" onclick="callMcpTool('<%= tool.name %>', <%= idx %>)">Call</button>
-                      <div class="tool-result mt-2" id="toolResult<%= idx %>" style="display:none;">
-                        <pre class="bg-light p-2 rounded border"></pre>
-                      </div>
+      <article class="surface-container round" style="margin-top:1rem;">
+        <h6>Available Tools</h6>
+        <table class="stripes">
+          <thead>
+            <tr><th>App</th><th>Tool</th><th>Description</th><th>Action</th></tr>
+          </thead>
+          <tbody>
+            <% tools.forEach(function(tool, idx) { %>
+              <tr>
+                <td><span class="chip small primary"><%= tool.appName %></span></td>
+                <td><code><%= tool.name %></code></td>
+                <td><%= tool.description || '' %></td>
+                <td>
+                  <button class="small border" onclick="toggleTry('toolCall<%= idx %>')">Try</button>
+                </td>
+              </tr>
+              <tr id="toolCall<%= idx %>" style="display:none;">
+                <td colspan="4">
+                  <div style="padding:0.5rem;">
+                    <div class="field border round" style="font-family:monospace;">
+                      <input type="text" id="toolArgs<%= idx %>" placeholder='{"title": "Inception"}'>
+                      <label>Arguments (JSON)</label>
                     </div>
-                  </td>
-                </tr>
-              <% }); %>
-            </tbody>
-          </table>
-        </div>
-      </div>
+                    <button class="small primary" onclick="callMcpTool('<%= tool.name %>', <%= idx %>)">Call</button>
+                    <div class="tool-result" id="toolResult<%= idx %>" style="display:none;margin-top:0.5rem;">
+                      <pre class="surface-container round padding"></pre>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </article>
     <% } else if (configs.length === 0) { %>
-      <div class="alert alert-info mt-4">
-        <h5>No MCP Apps Configured</h5>
+      <article class="primary-container round padding" style="margin-top:1rem;">
+        <h6>No MCP Apps Configured</h6>
         <p>Add MCP app servers to your <code>arm.yaml</code> configuration to extend ARM with external tools.</p>
         <p><strong>Example: OMDB Movie Database</strong> (<a href="https://github.com/shelbeely/omdb-mcp-server" target="_blank">omdb-mcp-server</a>)</p>
         <pre><code>MCP_APPS:
@@ -172,14 +154,19 @@
     args: ["-y", "omdb-mcp-server"]
     env:
       OMDB_API_KEY: "your-omdb-api-key"</code></pre>
-        <p class="mb-0">Get a free OMDB API key at <a href="https://omdbapi.com/apikey.aspx" target="_blank">omdbapi.com</a>.</p>
-      </div>
+        <p>Get a free OMDB API key at <a href="https://omdbapi.com/apikey.aspx" target="_blank">omdbapi.com</a>.</p>
+      </article>
     <% } %>
   </div>
 
   <script type="module" src="https://cdn.jsdelivr.net/npm/beercss@3.7.14/dist/cdn/beer.min.js"></script>
   <script type="module" src="https://cdn.jsdelivr.net/npm/material-dynamic-colors@1.1.4/dist/cdn/material-dynamic-colors.min.js"></script>
   <script>
+    function toggleTry(id) {
+      var el = document.getElementById(id);
+      el.style.display = el.style.display === 'none' ? '' : 'none';
+    }
+
     // Call an MCP tool and display the result
     async function callMcpTool(toolName, idx) {
       var argsInput = document.getElementById('toolArgs' + idx);

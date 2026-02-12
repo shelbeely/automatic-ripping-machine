@@ -10,12 +10,15 @@
 </head>
 <body class="dark">
   <%- include('nav') %>
-  <div class="container mt-5">
-    <div class="alert alert-danger">
-      <h4>Error</h4>
+  <div class="page">
+    <div class="error-container round padding">
+      <i>error</i>
+      <h6>Error</h6>
       <p><%= typeof error !== 'undefined' ? error : 'An unknown error occurred' %></p>
     </div>
-    <a href="/" class="btn btn-primary">Return Home</a>
+    <div style="margin-top:1rem;">
+      <a href="/" class="button primary small">Return Home</a>
+    </div>
   </div>
   <script type="module" src="https://cdn.jsdelivr.net/npm/beercss@3.7.14/dist/cdn/beer.min.js"></script>
   <script type="module" src="https://cdn.jsdelivr.net/npm/material-dynamic-colors@1.1.4/dist/cdn/material-dynamic-colors.min.js"></script>

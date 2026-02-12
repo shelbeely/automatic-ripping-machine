@@ -10,14 +10,14 @@
 </head>
 <body class="dark">
   <%- include('nav') %>
-  <div class="container-fluid mt-3">
-    <h3>Logs<% if (typeof jobId !== 'undefined' && jobId) { %> - Job #<%= jobId %><% } %></h3>
-    <div class="card">
-      <div class="card-body">
-        <pre style="max-height: 600px; overflow-y: auto;"><%= typeof logContent !== 'undefined' ? logContent : 'No log content available' %></pre>
-      </div>
+  <div class="page">
+    <h5>Logs<% if (typeof jobId !== 'undefined' && jobId) { %> - Job #<%= jobId %><% } %></h5>
+    <article class="surface-container round">
+      <pre style="max-height: 600px; overflow-y: auto;"><%= typeof logContent !== 'undefined' ? logContent : 'No log content available' %></pre>
+    </article>
+    <div style="margin-top:1rem;">
+      <a href="/" class="button primary small">Back to Home</a>
     </div>
-    <a href="/" class="btn btn-primary mt-2">Back to Home</a>
   </div>
   <script type="module" src="https://cdn.jsdelivr.net/npm/beercss@3.7.14/dist/cdn/beer.min.js"></script>
   <script type="module" src="https://cdn.jsdelivr.net/npm/material-dynamic-colors@1.1.4/dist/cdn/material-dynamic-colors.min.js"></script>

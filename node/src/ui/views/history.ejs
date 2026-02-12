@@ -10,10 +10,10 @@
 </head>
 <body class="dark">
   <%- include('nav') %>
-  <div class="container-fluid mt-3">
-    <h3>Job History</h3>
+  <div class="page">
+    <h5>Job History</h5>
     <% if (typeof jobs !== 'undefined' && jobs.length > 0) { %>
-      <table class="table table-striped">
+      <table class="stripes">
         <thead>
           <tr><th>ID</th><th>Title</th><th>Type</th><th>Status</th><th>Started</th><th>Finished</th><th>Actions</th></tr>
         </thead>
@@ -23,16 +23,19 @@
               <td><a href="/jobdetail?job_id=<%= job.job_id %>"><%= job.job_id %></a></td>
               <td><%= job.title || 'Unknown' %></td>
               <td><%= job.disctype %></td>
-              <td><span class="badge bg-<%= job.status === 'success' ? 'success' : 'danger' %>"><%= job.status %></span></td>
+              <td><span class="chip small <%= job.status === 'success' ? 'tertiary' : 'error' %>"><%= job.status %></span></td>
               <td><%= new Date(job.start_time).toLocaleString() %></td>
               <td><%= job.stop_time ? new Date(job.stop_time).toLocaleString() : 'N/A' %></td>
-              <td><a href="/jobdetail?job_id=<%= job.job_id %>" class="btn btn-sm btn-outline-primary">Details</a></td>
+              <td><a href="/jobdetail?job_id=<%= job.job_id %>" class="button small border">Details</a></td>
             </tr>
           <% }); %>
         </tbody>
       </table>
     <% } else { %>
-      <div class="alert alert-info">No completed jobs yet.</div>
+      <div class="primary-container round padding">
+        <i>info</i>
+        <span>No completed jobs yet.</span>
+      </div>
     <% } %>
   </div>
   <script type="module" src="https://cdn.jsdelivr.net/npm/beercss@3.7.14/dist/cdn/beer.min.js"></script>

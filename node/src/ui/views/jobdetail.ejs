@@ -10,59 +10,57 @@
 </head>
 <body class="dark">
   <%- include('nav') %>
-  <div class="container-fluid mt-3">
-    <h3>Job Details - #<%= job.job_id %></h3>
-    <div class="row">
-      <div class="col-md-6">
-        <div class="card mb-3">
-          <div class="card-header"><h5>Job Info</h5></div>
-          <div class="card-body">
-            <table class="table">
-              <tr><td><strong>Title</strong></td><td><%= job.title || 'Unknown' %></td></tr>
-              <tr><td><strong>Year</strong></td><td><%= job.year || 'N/A' %></td></tr>
-              <tr><td><strong>Type</strong></td><td><%= job.disctype %></td></tr>
-              <tr><td><strong>Video Type</strong></td><td><%= job.video_type || 'N/A' %></td></tr>
-              <tr><td><strong>Status</strong></td><td><span class="badge bg-<%= job.status === 'success' ? 'success' : (job.status === 'fail' ? 'danger' : 'primary') %>"><%= job.status %></span></td></tr>
-              <tr><td><strong>Device</strong></td><td><%= job.devpath %></td></tr>
-              <tr><td><strong>Started</strong></td><td><%= new Date(job.start_time).toLocaleString() %></td></tr>
-              <tr><td><strong>IMDB</strong></td><td><%= job.imdb_id || 'N/A' %></td></tr>
-            </table>
-          </div>
-        </div>
+  <div class="page">
+    <h5>Job Details - #<%= job.job_id %></h5>
+    <div class="grid">
+      <div class="s12 m6">
+        <article class="surface-container round">
+          <h6>Job Info</h6>
+          <table>
+            <tr><td><strong>Title</strong></td><td><%= job.title || 'Unknown' %></td></tr>
+            <tr><td><strong>Year</strong></td><td><%= job.year || 'N/A' %></td></tr>
+            <tr><td><strong>Type</strong></td><td><%= job.disctype %></td></tr>
+            <tr><td><strong>Video Type</strong></td><td><%= job.video_type || 'N/A' %></td></tr>
+            <tr><td><strong>Status</strong></td><td><span class="chip small <%= job.status === 'success' ? 'tertiary' : (job.status === 'fail' ? 'error' : 'primary') %>"><%= job.status %></span></td></tr>
+            <tr><td><strong>Device</strong></td><td><%= job.devpath %></td></tr>
+            <tr><td><strong>Started</strong></td><td><%= new Date(job.start_time).toLocaleString() %></td></tr>
+            <tr><td><strong>IMDB</strong></td><td><%= job.imdb_id || 'N/A' %></td></tr>
+          </table>
+        </article>
       </div>
-      <div class="col-md-6">
+      <div class="s12 m6">
         <% if (job.poster_url) { %>
-          <img src="<%= job.poster_url %>" alt="Poster" class="img-fluid" style="max-height: 400px;">
+          <img src="<%= job.poster_url %>" alt="Poster" style="max-height: 400px; max-width: 100%; border-radius: 0.5rem;">
         <% } %>
       </div>
     </div>
     <% if (typeof tracks !== 'undefined' && tracks.length > 0) { %>
-      <div class="card">
-        <div class="card-header"><h5>Tracks</h5></div>
-        <div class="card-body">
-          <table class="table table-striped">
-            <thead>
-              <tr><th>#</th><th>Length</th><th>Aspect</th><th>FPS</th><th>Main</th><th>Ripped</th><th>Filename</th></tr>
-            </thead>
-            <tbody>
-              <% tracks.forEach(function(track) { %>
-                <tr>
-                  <td><%= track.track_number %></td>
-                  <td><%= track.length %></td>
-                  <td><%= track.aspect_ratio %></td>
-                  <td><%= track.fps %></td>
-                  <td><%= track.main_feature ? 'Yes' : 'No' %></td>
-                  <td><%= track.ripped ? 'Yes' : 'No' %></td>
-                  <td><%= track.filename || '' %></td>
-                </tr>
-              <% }); %>
-            </tbody>
-          </table>
-        </div>
-      </div>
+      <article class="surface-container round" style="margin-top:1rem;">
+        <h6>Tracks</h6>
+        <table class="stripes">
+          <thead>
+            <tr><th>#</th><th>Length</th><th>Aspect</th><th>FPS</th><th>Main</th><th>Ripped</th><th>Filename</th></tr>
+          </thead>
+          <tbody>
+            <% tracks.forEach(function(track) { %>
+              <tr>
+                <td><%= track.track_number %></td>
+                <td><%= track.length %></td>
+                <td><%= track.aspect_ratio %></td>
+                <td><%= track.fps %></td>
+                <td><%= track.main_feature ? 'Yes' : 'No' %></td>
+                <td><%= track.ripped ? 'Yes' : 'No' %></td>
+                <td><%= track.filename || '' %></td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </article>
     <% } %>
-    <a href="/logs?job_id=<%= job.job_id %>" class="btn btn-outline-secondary mt-2">View Logs</a>
-    <a href="/" class="btn btn-primary mt-2">Back to Home</a>
+    <div style="margin-top:1rem;">
+      <a href="/logs?job_id=<%= job.job_id %>" class="button small border">View Logs</a>
+      <a href="/" class="button small primary">Back to Home</a>
+    </div>
   </div>
   <script type="module" src="https://cdn.jsdelivr.net/npm/beercss@3.7.14/dist/cdn/beer.min.js"></script>
   <script type="module" src="https://cdn.jsdelivr.net/npm/material-dynamic-colors@1.1.4/dist/cdn/material-dynamic-colors.min.js"></script>

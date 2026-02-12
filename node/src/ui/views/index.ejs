@@ -10,48 +10,44 @@
 </head>
 <body class="dark">
   <%- include('nav') %>
-  <div class="container-fluid mt-3">
-    <h2>Automatic Ripping Machine</h2>
-    <div class="row mt-3">
-      <div class="col-md-8">
-        <div class="card">
-          <div class="card-header"><h5>Active Jobs</h5></div>
-          <div class="card-body">
-            <% if (typeof jobs !== 'undefined' && jobs.length > 0) { %>
-              <table class="table table-striped">
-                <thead>
-                  <tr><th>ID</th><th>Title</th><th>Type</th><th>Status</th><th>Progress</th><th>Started</th><th>Actions</th></tr>
-                </thead>
-                <tbody>
-                  <% jobs.forEach(function(job) { %>
-                    <tr>
-                      <td><a href="/jobdetail?job_id=<%= job.job_id %>"><%= job.job_id %></a></td>
-                      <td><%= job.title || 'Unknown' %></td>
-                      <td><%= job.disctype %></td>
-                      <td><span class="badge bg-<%= job.status === 'ripping' ? 'primary' : (job.status === 'transcoding' ? 'warning' : 'info') %>"><%= job.status %></span></td>
-                      <td><%= job.progress || 'N/A' %></td>
-                      <td><%= new Date(job.start_time).toLocaleString() %></td>
-                      <td><a href="/jobdetail?job_id=<%= job.job_id %>" class="btn btn-sm btn-outline-primary">Details</a></td>
-                    </tr>
-                  <% }); %>
-                </tbody>
-              </table>
-            <% } else { %>
-              <p class="text-muted">No active jobs</p>
-            <% } %>
-          </div>
-        </div>
+  <div class="page">
+    <h5>Automatic Ripping Machine</h5>
+    <div class="grid">
+      <div class="s12 m8">
+        <article class="surface-container round">
+          <h6>Active Jobs</h6>
+          <% if (typeof jobs !== 'undefined' && jobs.length > 0) { %>
+            <table class="stripes">
+              <thead>
+                <tr><th>ID</th><th>Title</th><th>Type</th><th>Status</th><th>Progress</th><th>Started</th><th>Actions</th></tr>
+              </thead>
+              <tbody>
+                <% jobs.forEach(function(job) { %>
+                  <tr>
+                    <td><a href="/jobdetail?job_id=<%= job.job_id %>"><%= job.job_id %></a></td>
+                    <td><%= job.title || 'Unknown' %></td>
+                    <td><%= job.disctype %></td>
+                    <td><span class="chip small <%= job.status === 'ripping' ? 'primary' : (job.status === 'transcoding' ? 'secondary' : 'tertiary') %>"><%= job.status %></span></td>
+                    <td><%= job.progress || 'N/A' %></td>
+                    <td><%= new Date(job.start_time).toLocaleString() %></td>
+                    <td><a href="/jobdetail?job_id=<%= job.job_id %>" class="button small border">Details</a></td>
+                  </tr>
+                <% }); %>
+              </tbody>
+            </table>
+          <% } else { %>
+            <p>No active jobs</p>
+          <% } %>
+        </article>
       </div>
-      <div class="col-md-4">
-        <div class="card">
-          <div class="card-header"><h5>System Info</h5></div>
-          <div class="card-body">
-            <% if (typeof systemInfo !== 'undefined') { %>
-              <p><strong>CPU:</strong> <%= systemInfo.cpu || 'Unknown' %></p>
-              <p><strong>Memory:</strong> <%= systemInfo.mem_total || 0 %> GB</p>
-            <% } %>
-          </div>
-        </div>
+      <div class="s12 m4">
+        <article class="surface-container round">
+          <h6>System Info</h6>
+          <% if (typeof systemInfo !== 'undefined') { %>
+            <p><strong>CPU:</strong> <%= systemInfo.cpu || 'Unknown' %></p>
+            <p><strong>Memory:</strong> <%= systemInfo.mem_total || 0 %> GB</p>
+          <% } %>
+        </article>
       </div>
     </div>
   </div>

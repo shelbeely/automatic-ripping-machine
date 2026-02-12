@@ -10,10 +10,10 @@
 </head>
 <body class="dark">
   <%- include('nav') %>
-  <div class="container-fluid mt-3">
-    <h3>Active Rips</h3>
+  <div class="page">
+    <h5>Active Rips</h5>
     <% if (typeof jobs !== 'undefined' && jobs.length > 0) { %>
-      <table class="table table-striped">
+      <table class="stripes">
         <thead>
           <tr><th>ID</th><th>Title</th><th>Type</th><th>Status</th><th>Progress</th><th>ETA</th><th>Started</th><th>Actions</th></tr>
         </thead>
@@ -23,17 +23,20 @@
               <td><a href="/jobdetail?job_id=<%= job.job_id %>"><%= job.job_id %></a></td>
               <td><%= job.title || 'Unknown' %></td>
               <td><%= job.disctype %></td>
-              <td><span class="badge bg-primary"><%= job.status %></span></td>
+              <td><span class="chip small primary"><%= job.status %></span></td>
               <td><%= job.progress || 'N/A' %></td>
               <td><%= job.eta || 'N/A' %></td>
               <td><%= new Date(job.start_time).toLocaleString() %></td>
-              <td><a href="/jobdetail?job_id=<%= job.job_id %>" class="btn btn-sm btn-outline-primary">Details</a></td>
+              <td><a href="/jobdetail?job_id=<%= job.job_id %>" class="button small border">Details</a></td>
             </tr>
           <% }); %>
         </tbody>
       </table>
     <% } else { %>
-      <div class="alert alert-info">No active rips at this time.</div>
+      <div class="primary-container round padding">
+        <i>info</i>
+        <span>No active rips at this time.</span>
+      </div>
     <% } %>
   </div>
   <script type="module" src="https://cdn.jsdelivr.net/npm/beercss@3.7.14/dist/cdn/beer.min.js"></script>

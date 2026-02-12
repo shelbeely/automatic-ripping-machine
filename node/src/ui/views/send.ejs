@@ -10,9 +10,33 @@
 </head>
 <body class="dark">
   <%- include('nav') %>
-  <div class="container-fluid mt-3">
-    <h3>Send Media</h3>
-    <div class="alert alert-info">Media distribution feature - configure in settings.</div>
+  <div class="page">
+    <h5>Completed Media</h5>
+    <p><i>folder</i> <code><%= typeof completedPath !== 'undefined' ? completedPath : '' %></code></p>
+    <% if (typeof files !== 'undefined' && files.length > 0) { %>
+      <article class="surface-container round" style="overflow-x:auto;">
+        <table class="stripes">
+          <thead>
+            <tr><th>Folder</th><th>Filename</th><th>Size</th><th>Modified</th></tr>
+          </thead>
+          <tbody>
+            <% files.forEach(function(file) { %>
+              <tr>
+                <td><%= file.folder || '—' %></td>
+                <td><%= file.name %></td>
+                <td><%= file.size %></td>
+                <td><%= new Date(file.modified).toLocaleString() %></td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </article>
+    <% } else { %>
+      <div class="primary-container round padding">
+        <i>info</i>
+        <span>No completed media files found.</span>
+      </div>
+    <% } %>
   </div>
   <script type="module" src="https://cdn.jsdelivr.net/npm/beercss@3.7.14/dist/cdn/beer.min.js"></script>
   <script type="module" src="https://cdn.jsdelivr.net/npm/material-dynamic-colors@1.1.4/dist/cdn/material-dynamic-colors.min.js"></script>

@@ -10,19 +10,17 @@
 </head>
 <body class="dark">
   <%- include('nav') %>
-  <div class="container-fluid mt-3">
-    <h3>System Information</h3>
-    <div class="card">
-      <div class="card-body">
-        <table class="table">
-          <tr><td><strong>Hostname</strong></td><td><%= hostname %></td></tr>
-          <tr><td><strong>Platform</strong></td><td><%= platform %></td></tr>
-          <tr><td><strong>CPU</strong></td><td><%= systemInfo.cpu %></td></tr>
-          <tr><td><strong>Memory</strong></td><td><%= systemInfo.mem_total %> GB</td></tr>
-          <tr><td><strong>Uptime</strong></td><td><%= Math.floor(uptime / 3600) %>h <%= Math.floor((uptime % 3600) / 60) %>m</td></tr>
-        </table>
-      </div>
-    </div>
+  <div class="page">
+    <h5>System Information</h5>
+    <article class="surface-container round">
+      <table>
+        <tr><td><strong>Hostname</strong></td><td><%= hostname %></td></tr>
+        <tr><td><strong>Platform</strong></td><td><%= platform %></td></tr>
+        <tr><td><strong>CPU</strong></td><td><%= systemInfo.cpu %></td></tr>
+        <tr><td><strong>Memory</strong></td><td><%= systemInfo.mem_total %> GB</td></tr>
+        <tr><td><strong>Uptime</strong></td><td><%= Math.floor(uptime / 3600) %>h <%= Math.floor((uptime % 3600) / 60) %>m</td></tr>
+      </table>
+    </article>
   </div>
   <script type="module" src="https://cdn.jsdelivr.net/npm/beercss@3.7.14/dist/cdn/beer.min.js"></script>
   <script type="module" src="https://cdn.jsdelivr.net/npm/material-dynamic-colors@1.1.4/dist/cdn/material-dynamic-colors.min.js"></script>

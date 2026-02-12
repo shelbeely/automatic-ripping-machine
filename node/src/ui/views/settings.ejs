@@ -10,10 +10,13 @@
 </head>
 <body class="dark">
   <%- include('nav') %>
-  <div class="container-fluid mt-3">
-    <h3>Settings</h3>
-    <div id="saveAlert" class="alert alert-success d-none">Settings saved successfully.</div>
-    <div id="saveError" class="alert alert-danger d-none"></div>
+  <div class="page">
+    <h5>Settings</h5>
+    <div id="saveAlert" class="tertiary-container round padding" style="display:none;">
+      <i>check_circle</i>
+      <span>Settings saved successfully.</span>
+    </div>
+    <div id="saveError" class="error-container round padding" style="display:none;"></div>
 
     <% if (typeof config !== 'undefined') { %>
     <%
@@ -32,87 +35,92 @@
     %>
     <form id="settingsForm">
       <% for (var sectionName in sections) { %>
-        <div class="card mt-3">
-          <div class="card-header"><h5><%= sectionName %></h5></div>
-          <div class="card-body">
-            <% sections[sectionName].forEach(function(key) { %>
-              <div class="row mb-2 align-items-center">
-                <div class="col-md-4"><label for="<%= key %>" class="form-label mb-0"><code><%= key %></code></label></div>
-                <div class="col-md-8">
-                  <% if (booleanKeys.indexOf(key) !== -1) { %>
-                    <div class="form-check form-switch">
-                      <input class="form-check-input" type="checkbox" id="<%= key %>" name="<%= key %>" <%= config[key] ? 'checked' : '' %>>
-                    </div>
-                  <% } else if (selectKeys[key]) { %>
-                    <select class="form-control form-control-sm" id="<%= key %>" name="<%= key %>">
+        <article class="surface-container round" style="margin-top:1rem;">
+          <h6><%= sectionName %></h6>
+          <% sections[sectionName].forEach(function(key) { %>
+            <div class="grid" style="align-items:center;margin-bottom:0.5rem;">
+              <div class="s12 m4"><label for="<%= key %>"><code><%= key %></code></label></div>
+              <div class="s12 m8">
+                <% if (booleanKeys.indexOf(key) !== -1) { %>
+                  <label class="switch">
+                    <input type="checkbox" id="<%= key %>" name="<%= key %>" <%= config[key] ? 'checked' : '' %>>
+                    <span></span>
+                  </label>
+                <% } else if (selectKeys[key]) { %>
+                  <div class="field border round">
+                    <select id="<%= key %>" name="<%= key %>">
                       <% selectKeys[key].forEach(function(opt) { %>
                         <option value="<%= opt %>" <%= config[key] === opt ? 'selected' : '' %>><%= opt %></option>
                       <% }); %>
                     </select>
-                  <% } else if (numberKeys.indexOf(key) !== -1) { %>
-                    <input type="number" class="form-control form-control-sm" id="<%= key %>" name="<%= key %>" value="<%= config[key] != null ? config[key] : '' %>">
-                  <% } else if (passwordKeys.indexOf(key) !== -1) { %>
-                    <input type="password" class="form-control form-control-sm" id="<%= key %>" name="<%= key %>" value="<%= config[key] || '' %>" autocomplete="off">
-                  <% } else { %>
-                    <input type="text" class="form-control form-control-sm" id="<%= key %>" name="<%= key %>" value="<%= config[key] != null ? config[key] : '' %>">
-                  <% } %>
-                </div>
+                  </div>
+                <% } else if (numberKeys.indexOf(key) !== -1) { %>
+                  <div class="field border round">
+                    <input type="number" id="<%= key %>" name="<%= key %>" value="<%= config[key] != null ? config[key] : '' %>">
+                  </div>
+                <% } else if (passwordKeys.indexOf(key) !== -1) { %>
+                  <div class="field border round">
+                    <input type="password" id="<%= key %>" name="<%= key %>" value="<%= config[key] || '' %>" autocomplete="off">
+                  </div>
+                <% } else { %>
+                  <div class="field border round">
+                    <input type="text" id="<%= key %>" name="<%= key %>" value="<%= config[key] != null ? config[key] : '' %>">
+                  </div>
+                <% } %>
               </div>
-            <% }); %>
-          </div>
-        </div>
+            </div>
+          <% }); %>
+        </article>
       <% } %>
 
-      <div class="card mt-3">
-        <div class="card-header"><h5>Other Settings</h5></div>
-        <div class="card-body">
-          <%
-            var knownKeys = [];
-            for (var s in sections) { knownKeys = knownKeys.concat(sections[s]); }
-          %>
-          <% for (var key in config) { %>
-            <% if (knownKeys.indexOf(key) === -1) { %>
-              <div class="row mb-2 align-items-center">
-                <div class="col-md-4"><label for="<%= key %>" class="form-label mb-0"><code><%= key %></code></label></div>
-                <div class="col-md-8">
-                  <input type="text" class="form-control form-control-sm" id="<%= key %>" name="<%= key %>" value="<%= config[key] != null ? config[key] : '' %>">
+      <article class="surface-container round" style="margin-top:1rem;">
+        <h6>Other Settings</h6>
+        <%
+          var knownKeys = [];
+          for (var s in sections) { knownKeys = knownKeys.concat(sections[s]); }
+        %>
+        <% for (var key in config) { %>
+          <% if (knownKeys.indexOf(key) === -1) { %>
+            <div class="grid" style="align-items:center;margin-bottom:0.5rem;">
+              <div class="s12 m4"><label for="<%= key %>"><code><%= key %></code></label></div>
+              <div class="s12 m8">
+                <div class="field border round">
+                  <input type="text" id="<%= key %>" name="<%= key %>" value="<%= config[key] != null ? config[key] : '' %>">
                 </div>
               </div>
-            <% } %>
+            </div>
           <% } %>
-        </div>
-      </div>
+        <% } %>
+      </article>
 
-      <button type="submit" class="btn btn-primary mt-3 mb-3">Save Settings</button>
+      <div style="margin-top:1rem;margin-bottom:1rem;">
+        <button type="submit" class="primary small">Save Settings</button>
+      </div>
     </form>
     <% } else { %>
-      <div class="card mt-3">
-        <div class="card-body">
-          <p class="text-muted">No configuration loaded. Create <code>/etc/arm/config/arm.yaml</code> to get started.</p>
-        </div>
-      </div>
+      <article class="surface-container round" style="margin-top:1rem;">
+        <p>No configuration loaded. Create <code>/etc/arm/config/arm.yaml</code> to get started.</p>
+      </article>
     <% } %>
 
     <% if (typeof drives !== 'undefined' && drives.length > 0) { %>
-      <div class="card mt-3">
-        <div class="card-header"><h5>Optical Drives</h5></div>
-        <div class="card-body">
-          <table class="table">
-            <thead><tr><th>Name</th><th>Mount</th><th>Model</th><th>Mode</th><th>Actions</th></tr></thead>
-            <tbody>
-              <% drives.forEach(function(drive) { %>
-                <tr>
-                  <td><%= drive.name %></td>
-                  <td><%= drive.mount %></td>
-                  <td><%= drive.model %></td>
-                  <td><%= drive.drive_mode %></td>
-                  <td><button class="btn btn-sm btn-warning" onclick="ejectDrive(<%= drive.drive_id %>)">Eject</button></td>
-                </tr>
-              <% }); %>
-            </tbody>
-          </table>
-        </div>
-      </div>
+      <article class="surface-container round" style="margin-top:1rem;">
+        <h6>Optical Drives</h6>
+        <table>
+          <thead><tr><th>Name</th><th>Mount</th><th>Model</th><th>Mode</th><th>Actions</th></tr></thead>
+          <tbody>
+            <% drives.forEach(function(drive) { %>
+              <tr>
+                <td><%= drive.name %></td>
+                <td><%= drive.mount %></td>
+                <td><%= drive.model %></td>
+                <td><%= drive.drive_mode %></td>
+                <td><button class="small secondary" onclick="ejectDrive(<%= drive.drive_id %>)">Eject</button></td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </article>
     <% } %>
   </div>
   <script type="module" src="https://cdn.jsdelivr.net/npm/beercss@3.7.14/dist/cdn/beer.min.js"></script>
@@ -146,17 +154,17 @@
         .then(function(r) { return r.json(); })
         .then(function(d) {
           if (d.success) {
-            document.getElementById('saveAlert').classList.remove('d-none');
-            document.getElementById('saveError').classList.add('d-none');
-            setTimeout(function() { document.getElementById('saveAlert').classList.add('d-none'); }, 3000);
+            document.getElementById('saveAlert').style.display = '';
+            document.getElementById('saveError').style.display = 'none';
+            setTimeout(function() { document.getElementById('saveAlert').style.display = 'none'; }, 3000);
           } else {
             document.getElementById('saveError').textContent = d.error || 'Save failed';
-            document.getElementById('saveError').classList.remove('d-none');
+            document.getElementById('saveError').style.display = '';
           }
         })
         .catch(function(e) {
           document.getElementById('saveError').textContent = 'Error: ' + e.message;
-          document.getElementById('saveError').classList.remove('d-none');
+          document.getElementById('saveError').style.display = '';
         });
     });
   </script>

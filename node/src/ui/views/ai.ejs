@@ -10,213 +10,225 @@
 </head>
 <body class="dark">
   <%- include('nav') %>
-  <div class="container-fluid mt-3">
-    <h2>AI Dashboard</h2>
-    <p class="text-muted">
+  <div class="page">
+    <h5>AI Dashboard</h5>
+    <p>
       ARM uses AI to enhance disc identification, optimize transcode settings, diagnose errors, generate
       media-library filenames, and fetch structured metadata for MKV tagging.
     </p>
 
-    <div class="row mt-3">
-      <div class="col-md-4">
-        <div class="card">
-          <div class="card-body text-center">
-            <h5 class="card-title">AI Status</h5>
-            <p class="display-6 <%= aiConfigured ? 'text-success' : 'text-danger' %>"><%= aiConfigured ? 'Active' : 'Not Configured' %></p>
-            <% if (!aiConfigured) { %>
-              <small class="text-muted">Set <code>AI_API_KEY</code> in arm.yaml</small>
-            <% } %>
-          </div>
-        </div>
+    <div class="grid">
+      <div class="s12 m4">
+        <article class="surface-container round" style="text-align:center;">
+          <h6>AI Status</h6>
+          <p style="font-size:1.5rem;"><span class="chip <%= aiConfigured ? 'tertiary' : 'error' %>"><%= aiConfigured ? 'Active' : 'Not Configured' %></span></p>
+          <% if (!aiConfigured) { %>
+            <small>Set <code>AI_API_KEY</code> in arm.yaml</small>
+          <% } %>
+        </article>
       </div>
-      <div class="col-md-4">
-        <div class="card">
-          <div class="card-body text-center">
-            <h5 class="card-title">Model</h5>
-            <p class="display-6" style="font-size: 1.5rem;"><%= aiModel %></p>
-          </div>
-        </div>
+      <div class="s12 m4">
+        <article class="surface-container round" style="text-align:center;">
+          <h6>Model</h6>
+          <p style="font-size:1.25rem;"><%= aiModel %></p>
+        </article>
       </div>
-      <div class="col-md-4">
-        <div class="card">
-          <div class="card-body text-center">
-            <h5 class="card-title">Capabilities</h5>
-            <p class="display-6">5</p>
-          </div>
-        </div>
+      <div class="s12 m4">
+        <article class="surface-container round" style="text-align:center;">
+          <h6>Capabilities</h6>
+          <p style="font-size:1.5rem;">5</p>
+        </article>
       </div>
     </div>
 
     <!-- AI Capabilities -->
-    <div class="card mt-4">
-      <div class="card-header"><h5>AI Capabilities</h5></div>
-      <div class="card-body">
-        <table class="table table-striped">
-          <thead>
-            <tr><th>Capability</th><th>Description</th><th>API Endpoint</th><th>Try</th></tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><strong>Disc Identification</strong></td>
-              <td>Parse disc labels to identify movie/TV show titles, years, and types</td>
-              <td><code>POST /api/ai/identify</code></td>
-              <td><button class="btn btn-sm btn-outline-primary" data-bs-toggle="collapse" data-bs-target="#tryIdentify">Try</button></td>
-            </tr>
-            <tr class="collapse" id="tryIdentify">
-              <td colspan="4">
-                <div class="p-2">
-                  <div class="row g-2">
-                    <div class="col-md-8">
-                      <input type="text" class="form-control form-control-sm" id="identifyLabel" placeholder="Disc label (e.g., STAR_WARS_EP_IV)">
-                    </div>
-                    <div class="col-md-2">
-                      <select class="form-control form-control-sm" id="identifyDisctype">
-                        <option value="unknown">Unknown</option>
-                        <option value="dvd">DVD</option>
-                        <option value="bluray">Blu-ray</option>
-                      </select>
-                    </div>
-                    <div class="col-md-2">
-                      <button class="btn btn-sm btn-primary w-100" onclick="tryIdentify()">Call</button>
-                    </div>
+    <article class="surface-container round" style="margin-top:1rem;">
+      <h6>AI Capabilities</h6>
+      <table class="stripes">
+        <thead>
+          <tr><th>Capability</th><th>Description</th><th>API Endpoint</th><th>Try</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Disc Identification</strong></td>
+            <td>Parse disc labels to identify movie/TV show titles, years, and types</td>
+            <td><code>POST /api/ai/identify</code></td>
+            <td><button class="small border" onclick="toggleTry('tryIdentify')">Try</button></td>
+          </tr>
+          <tr id="tryIdentify" style="display:none;">
+            <td colspan="4">
+              <div class="grid" style="padding:0.5rem;">
+                <div class="s12 m8">
+                  <div class="field border round">
+                    <input type="text" id="identifyLabel">
+                    <label for="identifyLabel">Disc label (e.g., STAR_WARS_EP_IV)</label>
                   </div>
-                  <div class="mt-2" id="identifyResult" style="display:none;"><pre class="bg-dark text-light p-2 rounded"></pre></div>
                 </div>
-              </td>
-            </tr>
-            <tr>
-              <td><strong>Transcode Optimization</strong></td>
-              <td>Recommend optimal transcode settings based on video properties and disc type</td>
-              <td><code>POST /api/ai/transcode</code></td>
-              <td><button class="btn btn-sm btn-outline-primary" data-bs-toggle="collapse" data-bs-target="#tryTranscode">Try</button></td>
-            </tr>
-            <tr class="collapse" id="tryTranscode">
-              <td colspan="4">
-                <div class="p-2">
-                  <div class="row g-2">
-                    <div class="col-md-10">
-                      <input type="text" class="form-control form-control-sm" id="transcodeInfo" placeholder='Video info JSON (e.g., {"resolution":"1920x1080","codec":"h264"})'>
-                    </div>
-                    <div class="col-md-2">
-                      <button class="btn btn-sm btn-primary w-100" onclick="tryTranscode()">Call</button>
-                    </div>
+                <div class="s12 m2">
+                  <div class="field border round">
+                    <select id="identifyDisctype">
+                      <option value="unknown">Unknown</option>
+                      <option value="dvd">DVD</option>
+                      <option value="bluray">Blu-ray</option>
+                    </select>
                   </div>
-                  <div class="mt-2" id="transcodeResult" style="display:none;"><pre class="bg-dark text-light p-2 rounded"></pre></div>
                 </div>
-              </td>
-            </tr>
-            <tr>
-              <td><strong>Error Diagnosis</strong></td>
-              <td>Analyze ripping/transcoding errors and provide actionable troubleshooting steps</td>
-              <td><code>POST /api/ai/diagnose</code></td>
-              <td><button class="btn btn-sm btn-outline-primary" data-bs-toggle="collapse" data-bs-target="#tryDiagnose">Try</button></td>
-            </tr>
-            <tr class="collapse" id="tryDiagnose">
-              <td colspan="4">
-                <div class="p-2">
-                  <div class="row g-2">
-                    <div class="col-md-10">
-                      <textarea class="form-control form-control-sm" id="diagnoseLog" rows="2" placeholder="Paste error log here..."></textarea>
-                    </div>
-                    <div class="col-md-2">
-                      <button class="btn btn-sm btn-primary w-100" onclick="tryDiagnose()">Call</button>
-                    </div>
+                <div class="s12 m2">
+                  <button class="small primary" style="width:100%;" onclick="tryIdentify()">Call</button>
+                </div>
+              </div>
+              <div id="identifyResult" style="display:none;"><pre class="surface-container round padding" style="overflow-x:auto;"></pre></div>
+            </td>
+          </tr>
+          <tr>
+            <td><strong>Transcode Optimization</strong></td>
+            <td>Recommend optimal transcode settings based on video properties and disc type</td>
+            <td><code>POST /api/ai/transcode</code></td>
+            <td><button class="small border" onclick="toggleTry('tryTranscode')">Try</button></td>
+          </tr>
+          <tr id="tryTranscode" style="display:none;">
+            <td colspan="4">
+              <div class="grid" style="padding:0.5rem;">
+                <div class="s12 m10">
+                  <div class="field border round">
+                    <input type="text" id="transcodeInfo">
+                    <label for="transcodeInfo">Video info JSON</label>
                   </div>
-                  <div class="mt-2" id="diagnoseResult" style="display:none;"><pre class="bg-dark text-light p-2 rounded"></pre></div>
                 </div>
-              </td>
-            </tr>
-            <tr>
-              <td><strong>Filename Generation</strong></td>
-              <td>Generate Plex/Emby/Jellyfin-compatible filenames and directory structures</td>
-              <td><code>POST /api/ai/filename</code></td>
-              <td><button class="btn btn-sm btn-outline-primary" data-bs-toggle="collapse" data-bs-target="#tryFilename">Try</button></td>
-            </tr>
-            <tr class="collapse" id="tryFilename">
-              <td colspan="4">
-                <div class="p-2">
-                  <div class="row g-2">
-                    <div class="col-md-5">
-                      <input type="text" class="form-control form-control-sm" id="filenameTitle" placeholder="Movie title">
-                    </div>
-                    <div class="col-md-2">
-                      <input type="text" class="form-control form-control-sm" id="filenameYear" placeholder="Year">
-                    </div>
-                    <div class="col-md-3">
-                      <select class="form-control form-control-sm" id="filenameType">
-                        <option value="movie">Movie</option>
-                        <option value="series">Series</option>
-                      </select>
-                    </div>
-                    <div class="col-md-2">
-                      <button class="btn btn-sm btn-primary w-100" onclick="tryFilename()">Call</button>
-                    </div>
+                <div class="s12 m2">
+                  <button class="small primary" style="width:100%;" onclick="tryTranscode()">Call</button>
+                </div>
+              </div>
+              <div id="transcodeResult" style="display:none;"><pre class="surface-container round padding" style="overflow-x:auto;"></pre></div>
+            </td>
+          </tr>
+          <tr>
+            <td><strong>Error Diagnosis</strong></td>
+            <td>Analyze ripping/transcoding errors and provide actionable troubleshooting steps</td>
+            <td><code>POST /api/ai/diagnose</code></td>
+            <td><button class="small border" onclick="toggleTry('tryDiagnose')">Try</button></td>
+          </tr>
+          <tr id="tryDiagnose" style="display:none;">
+            <td colspan="4">
+              <div class="grid" style="padding:0.5rem;">
+                <div class="s12 m10">
+                  <div class="field border round textarea">
+                    <textarea id="diagnoseLog" rows="2"></textarea>
+                    <label for="diagnoseLog">Paste error log here...</label>
                   </div>
-                  <div class="mt-2" id="filenameResult" style="display:none;"><pre class="bg-dark text-light p-2 rounded"></pre></div>
                 </div>
-              </td>
-            </tr>
-            <tr>
-              <td><strong>Credits &amp; Metadata</strong></td>
-              <td>Fetch structured credits (cast, crew, synopsis, genre, ratings) for MKV tagging</td>
-              <td><code>POST /api/ai/credits</code></td>
-              <td><button class="btn btn-sm btn-outline-primary" data-bs-toggle="collapse" data-bs-target="#tryCredits">Try</button></td>
-            </tr>
-            <tr class="collapse" id="tryCredits">
-              <td colspan="4">
-                <div class="p-2">
-                  <div class="row g-2">
-                    <div class="col-md-6">
-                      <input type="text" class="form-control form-control-sm" id="creditsTitle" placeholder="Movie title">
-                    </div>
-                    <div class="col-md-2">
-                      <input type="text" class="form-control form-control-sm" id="creditsYear" placeholder="Year">
-                    </div>
-                    <div class="col-md-2">
-                      <select class="form-control form-control-sm" id="creditsType">
-                        <option value="movie">Movie</option>
-                        <option value="series">Series</option>
-                      </select>
-                    </div>
-                    <div class="col-md-2">
-                      <button class="btn btn-sm btn-primary w-100" onclick="tryCredits()">Call</button>
-                    </div>
+                <div class="s12 m2">
+                  <button class="small primary" style="width:100%;" onclick="tryDiagnose()">Call</button>
+                </div>
+              </div>
+              <div id="diagnoseResult" style="display:none;"><pre class="surface-container round padding" style="overflow-x:auto;"></pre></div>
+            </td>
+          </tr>
+          <tr>
+            <td><strong>Filename Generation</strong></td>
+            <td>Generate Plex/Emby/Jellyfin-compatible filenames and directory structures</td>
+            <td><code>POST /api/ai/filename</code></td>
+            <td><button class="small border" onclick="toggleTry('tryFilename')">Try</button></td>
+          </tr>
+          <tr id="tryFilename" style="display:none;">
+            <td colspan="4">
+              <div class="grid" style="padding:0.5rem;">
+                <div class="s12 m5">
+                  <div class="field border round">
+                    <input type="text" id="filenameTitle">
+                    <label for="filenameTitle">Movie title</label>
                   </div>
-                  <div class="mt-2" id="creditsResult" style="display:none;"><pre class="bg-dark text-light p-2 rounded"></pre></div>
                 </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
+                <div class="s12 m2">
+                  <div class="field border round">
+                    <input type="text" id="filenameYear">
+                    <label for="filenameYear">Year</label>
+                  </div>
+                </div>
+                <div class="s12 m3">
+                  <div class="field border round">
+                    <select id="filenameType">
+                      <option value="movie">Movie</option>
+                      <option value="series">Series</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="s12 m2">
+                  <button class="small primary" style="width:100%;" onclick="tryFilename()">Call</button>
+                </div>
+              </div>
+              <div id="filenameResult" style="display:none;"><pre class="surface-container round padding" style="overflow-x:auto;"></pre></div>
+            </td>
+          </tr>
+          <tr>
+            <td><strong>Credits &amp; Metadata</strong></td>
+            <td>Fetch structured credits (cast, crew, synopsis, genre, ratings) for MKV tagging</td>
+            <td><code>POST /api/ai/credits</code></td>
+            <td><button class="small border" onclick="toggleTry('tryCredits')">Try</button></td>
+          </tr>
+          <tr id="tryCredits" style="display:none;">
+            <td colspan="4">
+              <div class="grid" style="padding:0.5rem;">
+                <div class="s12 m5">
+                  <div class="field border round">
+                    <input type="text" id="creditsTitle">
+                    <label for="creditsTitle">Movie title</label>
+                  </div>
+                </div>
+                <div class="s12 m2">
+                  <div class="field border round">
+                    <input type="text" id="creditsYear">
+                    <label for="creditsYear">Year</label>
+                  </div>
+                </div>
+                <div class="s12 m3">
+                  <div class="field border round">
+                    <select id="creditsType">
+                      <option value="movie">Movie</option>
+                      <option value="series">Series</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="s12 m2">
+                  <button class="small primary" style="width:100%;" onclick="tryCredits()">Call</button>
+                </div>
+              </div>
+              <div id="creditsResult" style="display:none;"><pre class="surface-container round padding" style="overflow-x:auto;"></pre></div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </article>
 
     <!-- AI Configuration -->
-    <div class="card mt-4">
-      <div class="card-header"><h5>AI Configuration</h5></div>
-      <div class="card-body">
-        <table class="table">
-          <tr>
-            <td><strong>API URL</strong></td>
-            <td><code><%= aiUrl %></code></td>
-          </tr>
-          <tr>
-            <td><strong>Model</strong></td>
-            <td><code><%= aiModel %></code></td>
-          </tr>
-          <tr>
-            <td><strong>API Key</strong></td>
-            <td><code><%= aiConfigured ? '••••••••' + aiKeyHint : 'Not set' %></code></td>
-          </tr>
-        </table>
-        <small class="text-muted">Configure via <code>AI_API_KEY</code>, <code>AI_API_URL</code>, and <code>AI_MODEL</code> in <code>arm.yaml</code> or environment variables (<code>ARM_AI_API_KEY</code>, etc.).</small>
-      </div>
-    </div>
+    <article class="surface-container round" style="margin-top:1rem;">
+      <h6>AI Configuration</h6>
+      <table>
+        <tr>
+          <td><strong>API URL</strong></td>
+          <td><code><%= aiUrl %></code></td>
+        </tr>
+        <tr>
+          <td><strong>Model</strong></td>
+          <td><code><%= aiModel %></code></td>
+        </tr>
+        <tr>
+          <td><strong>API Key</strong></td>
+          <td><code><%= aiConfigured ? '••••••••' + aiKeyHint : 'Not set' %></code></td>
+        </tr>
+      </table>
+      <small>Configure via <code>AI_API_KEY</code>, <code>AI_API_URL</code>, and <code>AI_MODEL</code> in <code>arm.yaml</code> or environment variables (<code>ARM_AI_API_KEY</code>, etc.).</small>
+    </article>
   </div>
 
   <script type="module" src="https://cdn.jsdelivr.net/npm/beercss@3.7.14/dist/cdn/beer.min.js"></script>
   <script type="module" src="https://cdn.jsdelivr.net/npm/material-dynamic-colors@1.1.4/dist/cdn/material-dynamic-colors.min.js"></script>
   <script>
+    function toggleTry(id) {
+      var el = document.getElementById(id);
+      el.style.display = el.style.display === 'none' ? '' : 'none';
+    }
+
     function showResult(id, data) {
       var el = document.getElementById(id);
       el.style.display = 'block';
