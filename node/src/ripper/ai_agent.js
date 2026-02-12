@@ -13,6 +13,8 @@ const { createLogger } = require('./logger');
 
 const logger = createLogger('ai_agent');
 
+const MIN_CONFIDENCE_THRESHOLD = 0.5;
+
 const DEFAULT_API_URL = 'https://api.openai.com/v1/chat/completions';
 const DEFAULT_MODEL = 'gpt-4o-mini';
 
@@ -66,6 +68,20 @@ async function chatCompletion(agent, messages, options = {}) {
 }
 
 /**
+ * Parse a JSON response from the AI, stripping markdown code fences if present.
+ */
+function parseAIResponse(response) {
+  if (!response) return null;
+  try {
+    const cleaned = response.replace(/```(?:json)?\s*/g, '').replace(/```\s*/g, '').trim();
+    return JSON.parse(cleaned);
+  } catch (err) {
+    logger.warn(`Failed to parse AI response as JSON: ${response}`);
+    return null;
+  }
+}
+
+/**
  * Ask the AI to parse a raw disc label into a clean title and year.
  *
  * Disc labels are often cryptic, like "STAR_WARS_EP_IV_DISC1" or
@@ -86,16 +102,7 @@ async function parseDiscLabel(agent, rawLabel, discType) {
   ];
 
   const response = await chatCompletion(agent, messages);
-  if (!response) return null;
-
-  try {
-    // Strip markdown code fences if present
-    const cleaned = response.replace(/```(?:json)?\s*/g, '').replace(/```\s*/g, '').trim();
-    return JSON.parse(cleaned);
-  } catch (err) {
-    logger.warn(`Failed to parse AI response as JSON: ${response}`);
-    return null;
-  }
+  return parseAIResponse(response);
 }
 
 /**
@@ -124,15 +131,11 @@ async function resolveAmbiguousResults(agent, rawLabel, candidates) {
   const response = await chatCompletion(agent, messages);
   if (!response) return null;
 
-  try {
-    const cleaned = response.replace(/```(?:json)?\s*/g, '').replace(/```\s*/g, '').trim();
-    const parsed = JSON.parse(cleaned);
-    const idx = (parsed.index || 1) - 1;
-    if (idx >= 0 && idx < candidates.length) {
-      return { ...candidates[idx], confidence: parsed.confidence || 0 };
-    }
-  } catch (err) {
-    logger.warn(`Failed to parse AI disambiguation response: ${response}`);
+  const parsed = parseAIResponse(response);
+  if (!parsed) return null;
+  const idx = (parsed.index || 1) - 1;
+  if (idx >= 0 && idx < candidates.length) {
+    return { ...candidates[idx], confidence: parsed.confidence || 0 };
   }
   return null;
 }
@@ -164,15 +167,7 @@ async function identifyUnknownDisc(agent, job) {
   ];
 
   const response = await chatCompletion(agent, messages);
-  if (!response) return null;
-
-  try {
-    const cleaned = response.replace(/```(?:json)?\s*/g, '').replace(/```\s*/g, '').trim();
-    return JSON.parse(cleaned);
-  } catch (err) {
-    logger.warn(`Failed to parse AI identification response: ${response}`);
-    return null;
-  }
+  return parseAIResponse(response);
 }
 
 /**
@@ -197,7 +192,7 @@ async function enhanceIdentification(job, config) {
   // If we have a label but no nice title, try AI parsing
   if (job.label && !job.hasnicetitle) {
     const parsed = await parseDiscLabel(agent, job.label, job.disctype);
-    if (parsed && parsed.title && (parsed.confidence || 0) >= 0.5) {
+    if (parsed && parsed.title && (parsed.confidence || 0) >= MIN_CONFIDENCE_THRESHOLD) {
       logger.info(`AI agent parsed label "${job.label}" -> "${parsed.title}" (confidence: ${parsed.confidence})`);
       job.title = parsed.title;
       job.title_auto = parsed.title;
@@ -216,7 +211,7 @@ async function enhanceIdentification(job, config) {
   // If still no identification, try the fallback
   if (!job.hasnicetitle && !job.title) {
     const identified = await identifyUnknownDisc(agent, job);
-    if (identified && identified.title && (identified.confidence || 0) >= 0.5) {
+    if (identified && identified.title && (identified.confidence || 0) >= MIN_CONFIDENCE_THRESHOLD) {
       logger.info(`AI agent identified unknown disc as "${identified.title}" (confidence: ${identified.confidence})`);
       job.title = identified.title;
       job.title_auto = identified.title;
@@ -238,10 +233,12 @@ async function enhanceIdentification(job, config) {
 module.exports = {
   createAgent,
   chatCompletion,
+  parseAIResponse,
   parseDiscLabel,
   resolveAmbiguousResults,
   identifyUnknownDisc,
   enhanceIdentification,
   DEFAULT_API_URL,
   DEFAULT_MODEL,
+  MIN_CONFIDENCE_THRESHOLD,
 };

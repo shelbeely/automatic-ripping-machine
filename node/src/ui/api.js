@@ -156,7 +156,7 @@ router.post('/ai/identify', async (req, res) => {
     if (!agent) {
       return res.status(503).json({
         success: false,
-        error: 'AI agent not configured. Set AI_API_KEY in arm.yaml or ARM_AI_API_KEY env var.',
+        error: 'AI agent not configured. Set AI_API_KEY in configuration or ARM_AI_API_KEY environment variable.',
       });
     }
     const result = await parseDiscLabel(agent, label, disctype || 'unknown');

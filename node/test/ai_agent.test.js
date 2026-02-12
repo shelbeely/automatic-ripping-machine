@@ -1,12 +1,14 @@
 const {
   createAgent,
   chatCompletion,
+  parseAIResponse,
   parseDiscLabel,
   resolveAmbiguousResults,
   identifyUnknownDisc,
   enhanceIdentification,
   DEFAULT_API_URL,
   DEFAULT_MODEL,
+  MIN_CONFIDENCE_THRESHOLD,
 } = require('../src/ripper/ai_agent');
 
 // Mock axios for all tests
@@ -123,6 +125,32 @@ describe('AI Agent', () => {
           }),
         })
       );
+    });
+  });
+
+  describe('parseAIResponse', () => {
+    test('should parse valid JSON', () => {
+      const result = parseAIResponse('{"title": "Test", "year": "2024"}');
+      expect(result).toEqual({ title: 'Test', year: '2024' });
+    });
+
+    test('should strip markdown code fences', () => {
+      const result = parseAIResponse('```json\n{"title": "Test"}\n```');
+      expect(result).toEqual({ title: 'Test' });
+    });
+
+    test('should return null for null input', () => {
+      expect(parseAIResponse(null)).toBeNull();
+    });
+
+    test('should return null for invalid JSON', () => {
+      expect(parseAIResponse('not json')).toBeNull();
+    });
+  });
+
+  describe('constants', () => {
+    test('MIN_CONFIDENCE_THRESHOLD should be 0.5', () => {
+      expect(MIN_CONFIDENCE_THRESHOLD).toBe(0.5);
     });
   });
 
