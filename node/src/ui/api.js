@@ -232,26 +232,6 @@ router.post('/ai/filename', async (req, res) => {
   }
 });
 
-// AI Agent: tell the story of the project from git history
-router.post('/ai/story', async (req, res) => {
-  try {
-    const { loadConfig } = require('../config/config');
-    const { requireAgent, tellStory } = require('../ripper/ai_agent');
-    const path = require('path');
-    const config = loadConfig();
-    const agent = requireAgent(config);
-    const repoPath = path.resolve(__dirname, '..', '..', '..');
-    const story = await tellStory(agent, repoPath);
-    if (story) {
-      res.json({ success: true, story });
-    } else {
-      res.json({ success: false, error: 'AI could not generate a story' });
-    }
-  } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
-  }
-});
-
 // MCP Apps: list all tools from connected MCP apps
 router.get('/mcp/tools', (req, res) => {
   try {

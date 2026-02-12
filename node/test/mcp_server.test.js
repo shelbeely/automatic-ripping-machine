@@ -72,11 +72,6 @@ describe('MCP Server', () => {
       const result = await handleToolCall('diagnose_error', { errorLog: 'test' }, {});
       expect(result.error).toContain('AI agent not configured');
     });
-
-    test('should return error for tell_story without AI agent', async () => {
-      const result = await handleToolCall('tell_story', {}, {});
-      expect(result.error).toContain('AI agent not configured');
-    });
   });
 
   describe('handleResourceRead', () => {
@@ -113,7 +108,6 @@ describe('MCP Server', () => {
       expect(toolNames).toContain('recommend_transcode');
       expect(toolNames).toContain('generate_filename');
       expect(toolNames).toContain('get_system_info');
-      expect(toolNames).toContain('tell_story');
     });
 
     test('all tools should have inputSchema', () => {
