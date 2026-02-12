@@ -11,6 +11,7 @@
  * environment variable. The ripping pipeline will not start without it.
  */
 const axios = require('axios');
+const { execSync } = require('child_process');
 const { createLogger } = require('./logger');
 
 const logger = createLogger('ai_agent');
@@ -365,6 +366,106 @@ async function generateMediaFilename(agent, job, trackInfo = {}) {
   return parseAIResponse(response);
 }
 
+/**
+ * Collect a summary of the git history from the repository.
+ *
+ * Gathers commit count, date range, top contributors, release tags,
+ * and a sample of milestone commits to build context for the AI.
+ */
+function collectGitHistory(repoPath) {
+  const opts = { cwd: repoPath, encoding: 'utf8', timeout: 30000 };
+
+  const totalCommits = execSync('git rev-list --all --count', opts).trim();
+
+  const firstCommit = execSync('git log --all --reverse --format=%ad --date=short -1', opts).trim();
+  const lastCommit = execSync('git log --all --format=%ad --date=short -1', opts).trim();
+
+  const contributors = execSync('git shortlog -sn --all', opts)
+    .trim()
+    .split('\n')
+    .slice(0, 15)
+    .map((line) => line.trim())
+    .join('\n');
+
+  const tags = execSync('git tag --sort=version:refname', opts)
+    .trim()
+    .split('\n')
+    .filter(Boolean);
+
+  // Sample milestone commits: first, tag commits, and recent
+  const milestoneLines = execSync(
+    'git log --all --format="%ad|%an|%s" --date=short --reverse',
+    opts
+  ).trim().split('\n');
+
+  // Take first 5, last 10, and evenly spaced samples from the middle
+  const samples = [];
+  samples.push(...milestoneLines.slice(0, 5));
+  if (milestoneLines.length > 50) {
+    const step = Math.floor(milestoneLines.length / 20);
+    for (let i = step; i < milestoneLines.length - 10; i += step) {
+      samples.push(milestoneLines[i]);
+    }
+  }
+  samples.push(...milestoneLines.slice(-10));
+  // Deduplicate while preserving order
+  const seen = new Set();
+  const uniqueSamples = samples.filter((s) => {
+    if (seen.has(s)) return false;
+    seen.add(s);
+    return true;
+  });
+
+  return {
+    totalCommits,
+    firstCommit,
+    lastCommit,
+    contributors,
+    tags,
+    sampleCommits: uniqueSamples,
+  };
+}
+
+/**
+ * AI Agent: Tell the story of the project based on its complete git history.
+ *
+ * Collects git history metadata (commits, contributors, tags, milestones)
+ * and asks the AI to generate a narrative telling the project's story.
+ */
+async function tellStory(agent, repoPath) {
+  if (!agent) return null;
+
+  let history;
+  try {
+    history = collectGitHistory(repoPath);
+  } catch (err) {
+    logger.warn(`Failed to collect git history: ${err.message}`);
+    return null;
+  }
+
+  const tagList = history.tags.length > 0
+    ? history.tags.join(', ')
+    : 'none';
+
+  const sampleList = history.sampleCommits
+    .map((s) => `  - ${s}`)
+    .join('\n');
+
+  const messages = [
+    {
+      role: 'system',
+      content: 'You are a storyteller who writes engaging narratives about software projects based on their git history. Write in a warm, human tone. Focus on the journey: who built it, how it evolved, major milestones, and what makes the project interesting.',
+    },
+    {
+      role: 'user',
+      content: `Tell the story of this software project based on its git history:\n\nTotal commits: ${history.totalCommits}\nFirst commit: ${history.firstCommit}\nMost recent commit: ${history.lastCommit}\n\nTop contributors:\n${history.contributors}\n\nRelease tags: ${tagList}\n\nMilestone commits (sampled):\n${sampleList}\n\nWrite a compelling narrative (3-5 paragraphs) telling the story of this project from birth to present. Highlight the key phases of development, notable contributors, and how the project has evolved over time.`,
+    },
+  ];
+
+  const response = await chatCompletion(agent, messages, { temperature: 0.7, maxTokens: 1500 });
+  return response;
+}
+
 module.exports = {
   createAgent,
   requireAgent,
@@ -377,6 +478,8 @@ module.exports = {
   recommendTranscodeSettings,
   diagnoseError,
   generateMediaFilename,
+  tellStory,
+  collectGitHistory,
   DEFAULT_API_URL,
   DEFAULT_MODEL,
   MIN_CONFIDENCE_THRESHOLD,

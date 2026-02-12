@@ -7,6 +7,8 @@ const {
   resolveAmbiguousResults,
   identifyUnknownDisc,
   enhanceIdentification,
+  tellStory,
+  collectGitHistory,
   DEFAULT_API_URL,
   DEFAULT_MODEL,
   MIN_CONFIDENCE_THRESHOLD,
@@ -627,6 +629,77 @@ describe('AI Agent', () => {
 
       const agent = { apiKey: 'key', apiUrl: DEFAULT_API_URL, model: DEFAULT_MODEL };
       const result = await generateMediaFilename(agent, { title: 'Test' });
+      expect(result).toBeNull();
+    });
+  });
+
+  describe('collectGitHistory', () => {
+    test('should collect git history from a valid repo', () => {
+      const path = require('path');
+      const repoPath = path.resolve(__dirname, '..', '..');
+      const history = collectGitHistory(repoPath);
+
+      expect(parseInt(history.totalCommits)).toBeGreaterThan(0);
+      expect(history.firstCommit).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+      expect(history.lastCommit).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+      expect(history.contributors).toBeDefined();
+      expect(history.contributors.length).toBeGreaterThan(0);
+      expect(Array.isArray(history.tags)).toBe(true);
+      expect(Array.isArray(history.sampleCommits)).toBe(true);
+      expect(history.sampleCommits.length).toBeGreaterThan(0);
+    });
+
+    test('should throw for invalid repo path', () => {
+      expect(() => collectGitHistory('/nonexistent/path')).toThrow();
+    });
+  });
+
+  describe('tellStory', () => {
+    test('should return null when agent is null', async () => {
+      const result = await tellStory(null, '/some/path');
+      expect(result).toBeNull();
+    });
+
+    test('should call AI with git history context', async () => {
+      const path = require('path');
+      const repoPath = path.resolve(__dirname, '..', '..');
+
+      axios.post.mockResolvedValueOnce({
+        data: {
+          choices: [{
+            message: { content: 'Once upon a time, a developer created ARM...' },
+          }],
+        },
+      });
+
+      const agent = { apiKey: 'key', apiUrl: DEFAULT_API_URL, model: DEFAULT_MODEL };
+      const result = await tellStory(agent, repoPath);
+
+      expect(result).toBe('Once upon a time, a developer created ARM...');
+      expect(axios.post).toHaveBeenCalled();
+
+      const callArgs = axios.post.mock.calls[axios.post.mock.calls.length - 1];
+      const messages = callArgs[1].messages;
+      expect(messages[0].role).toBe('system');
+      expect(messages[0].content).toContain('storyteller');
+      expect(messages[1].role).toBe('user');
+      expect(messages[1].content).toContain('Total commits');
+    });
+
+    test('should return null on API error', async () => {
+      const path = require('path');
+      const repoPath = path.resolve(__dirname, '..', '..');
+
+      axios.post.mockRejectedValueOnce(new Error('API error'));
+
+      const agent = { apiKey: 'key', apiUrl: DEFAULT_API_URL, model: DEFAULT_MODEL };
+      const result = await tellStory(agent, repoPath);
+      expect(result).toBeNull();
+    });
+
+    test('should return null when git history collection fails', async () => {
+      const agent = { apiKey: 'key', apiUrl: DEFAULT_API_URL, model: DEFAULT_MODEL };
+      const result = await tellStory(agent, '/nonexistent/path');
       expect(result).toBeNull();
     });
   });

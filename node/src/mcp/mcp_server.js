@@ -10,7 +10,7 @@
  * @see https://modelcontextprotocol.io
  */
 const { createLogger } = require('../ripper/logger');
-const { createAgent, parseDiscLabel, diagnoseError, recommendTranscodeSettings, generateMediaFilename } = require('../ripper/ai_agent');
+const { createAgent, parseDiscLabel, diagnoseError, recommendTranscodeSettings, generateMediaFilename, tellStory } = require('../ripper/ai_agent');
 
 const logger = createLogger('mcp_server');
 
@@ -112,6 +112,11 @@ const TOOLS = [
     description: 'Get ARM system information including CPU, memory, and configuration status.',
     inputSchema: { type: 'object', properties: {} },
   },
+  {
+    name: 'tell_story',
+    description: 'Tell a narrative story of the ARM project based on its complete git history.',
+    inputSchema: { type: 'object', properties: {} },
+  },
 ];
 
 /**
@@ -210,6 +215,14 @@ async function handleToolCall(name, args, config) {
         uptime: `${Math.round(os.uptime() / 3600)} hours`,
         nodeVersion: process.version, aiConfigured: !!agent,
       };
+    }
+
+    case 'tell_story': {
+      if (!agent) return { error: 'AI agent not configured' };
+      const path = require('path');
+      const repoPath = path.resolve(__dirname, '..', '..');
+      const story = await tellStory(agent, repoPath);
+      return story ? { story } : { error: 'Could not generate story' };
     }
 
     default:
