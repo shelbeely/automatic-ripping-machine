@@ -183,3 +183,8 @@ removed/*
 /installed
 
 arm.yaml
+
+# Node.js
+node/node_modules/
+node/package-lock.json
+node/*.db
