@@ -5,21 +5,93 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ARM - Settings</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
   <%- include('nav') %>
   <div class="container-fluid mt-3">
     <h3>Settings</h3>
-    <div class="card">
-      <div class="card-body">
-        <p>Configuration is managed through <code>arm.yaml</code>. Current settings:</p>
-        <% if (typeof config !== 'undefined') { %>
-          <pre><%= JSON.stringify(config, null, 2) %></pre>
-        <% } else { %>
-          <p class="text-muted">No configuration loaded</p>
-        <% } %>
+    <div id="saveAlert" class="alert alert-success d-none">Settings saved successfully.</div>
+    <div id="saveError" class="alert alert-danger d-none"></div>
+
+    <% if (typeof config !== 'undefined') { %>
+    <%
+      var sections = {
+        'Ripping': ['RIPMETHOD', 'MAINFEATURE', 'MINLENGTH', 'MAXLENGTH', 'RAW_PATH', 'TRANSCODE_PATH', 'COMPLETED_PATH', 'LOGPATH'],
+        'Transcoding': ['SKIP_TRANSCODE', 'HB_PRESET_DVD', 'HB_PRESET_BD', 'HB_ARGS_DVD', 'HB_ARGS_BD', 'DEST_EXT', 'HANDBRAKE_CLI', 'USE_FFMPEG', 'FFMPEG_ARGS_DVD', 'FFMPEG_ARGS_BD', 'FFMPEG_PRE_ARGS_DVD', 'FFMPEG_PRE_ARGS_BD', 'MAX_CONCURRENT_TRANSCODES'],
+        'Metadata': ['OMDB_API_KEY', 'TMDB_API_KEY', 'DATE_ADDED_TO_TITLE'],
+        'AI Agent': ['AI_API_KEY', 'AI_API_URL', 'AI_MODEL'],
+        'Notifications': ['NOTIFY_RIP', 'NOTIFY_TRANSCODE', 'PB_KEY', 'IFTTT_KEY', 'IFTTT_EVENT', 'PO_USER_KEY', 'PO_APP_KEY', 'JSON_URL'],
+        'Media Server': ['EMBY_SERVER', 'EMBY_PORT', 'EMBY_API_KEY', 'EMBY_REFRESH']
+      };
+      var booleanKeys = ['SKIP_TRANSCODE', 'MAINFEATURE', 'HANDBRAKE_CLI', 'USE_FFMPEG', 'EMBY_REFRESH', 'NOTIFY_RIP', 'NOTIFY_TRANSCODE', 'DATE_ADDED_TO_TITLE'];
+      var numberKeys = ['MINLENGTH', 'MAXLENGTH', 'EMBY_PORT', 'MAX_CONCURRENT_TRANSCODES'];
+      var passwordKeys = ['AI_API_KEY', 'OMDB_API_KEY', 'TMDB_API_KEY', 'PB_KEY', 'IFTTT_KEY', 'PO_USER_KEY', 'PO_APP_KEY', 'EMBY_API_KEY'];
+      var selectKeys = { RIPMETHOD: ['mkv', 'backup', 'backup_dvd'], DEST_EXT: ['mkv', 'mp4', 'avi'] };
+    %>
+    <form id="settingsForm">
+      <% for (var sectionName in sections) { %>
+        <div class="card mt-3">
+          <div class="card-header"><h5><%= sectionName %></h5></div>
+          <div class="card-body">
+            <% sections[sectionName].forEach(function(key) { %>
+              <div class="row mb-2 align-items-center">
+                <div class="col-md-4"><label for="<%= key %>" class="form-label mb-0"><code><%= key %></code></label></div>
+                <div class="col-md-8">
+                  <% if (booleanKeys.indexOf(key) !== -1) { %>
+                    <div class="form-check form-switch">
+                      <input class="form-check-input" type="checkbox" id="<%= key %>" name="<%= key %>" <%= config[key] ? 'checked' : '' %>>
+                    </div>
+                  <% } else if (selectKeys[key]) { %>
+                    <select class="form-control form-control-sm" id="<%= key %>" name="<%= key %>">
+                      <% selectKeys[key].forEach(function(opt) { %>
+                        <option value="<%= opt %>" <%= config[key] === opt ? 'selected' : '' %>><%= opt %></option>
+                      <% }); %>
+                    </select>
+                  <% } else if (numberKeys.indexOf(key) !== -1) { %>
+                    <input type="number" class="form-control form-control-sm" id="<%= key %>" name="<%= key %>" value="<%= config[key] != null ? config[key] : '' %>">
+                  <% } else if (passwordKeys.indexOf(key) !== -1) { %>
+                    <input type="password" class="form-control form-control-sm" id="<%= key %>" name="<%= key %>" value="<%= config[key] || '' %>" autocomplete="off">
+                  <% } else { %>
+                    <input type="text" class="form-control form-control-sm" id="<%= key %>" name="<%= key %>" value="<%= config[key] != null ? config[key] : '' %>">
+                  <% } %>
+                </div>
+              </div>
+            <% }); %>
+          </div>
+        </div>
+      <% } %>
+
+      <div class="card mt-3">
+        <div class="card-header"><h5>Other Settings</h5></div>
+        <div class="card-body">
+          <%
+            var knownKeys = [];
+            for (var s in sections) { knownKeys = knownKeys.concat(sections[s]); }
+          %>
+          <% for (var key in config) { %>
+            <% if (knownKeys.indexOf(key) === -1) { %>
+              <div class="row mb-2 align-items-center">
+                <div class="col-md-4"><label for="<%= key %>" class="form-label mb-0"><code><%= key %></code></label></div>
+                <div class="col-md-8">
+                  <input type="text" class="form-control form-control-sm" id="<%= key %>" name="<%= key %>" value="<%= config[key] != null ? config[key] : '' %>">
+                </div>
+              </div>
+            <% } %>
+          <% } %>
+        </div>
       </div>
-    </div>
+
+      <button type="submit" class="btn btn-primary mt-3 mb-3">Save Settings</button>
+    </form>
+    <% } else { %>
+      <div class="card mt-3">
+        <div class="card-body">
+          <p class="text-muted">No configuration loaded. Create <code>/etc/arm/config/arm.yaml</code> to get started.</p>
+        </div>
+      </div>
+    <% } %>
+
     <% if (typeof drives !== 'undefined' && drives.length > 0) { %>
       <div class="card mt-3">
         <div class="card-header"><h5>Optical Drives</h5></div>
@@ -46,10 +118,45 @@
   <script>
     function ejectDrive(id) {
       fetch('/drive/eject/' + id, { method: 'POST' })
-        .then(r => r.json())
-        .then(d => { if (d.success) location.reload(); })
-        .catch(e => alert('Error: ' + e.message));
+        .then(function(r) { return r.json(); })
+        .then(function(d) { if (d.success) location.reload(); })
+        .catch(function(e) { alert('Error: ' + e.message); });
     }
+
+    document.getElementById('settingsForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      var formData = {};
+      var inputs = this.querySelectorAll('input, select');
+      inputs.forEach(function(input) {
+        if (input.type === 'checkbox') {
+          formData[input.name] = input.checked;
+        } else if (input.type === 'number' && input.value !== '') {
+          formData[input.name] = Number(input.value);
+        } else {
+          formData[input.name] = input.value;
+        }
+      });
+      fetch('/save_settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      })
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+          if (d.success) {
+            document.getElementById('saveAlert').classList.remove('d-none');
+            document.getElementById('saveError').classList.add('d-none');
+            setTimeout(function() { document.getElementById('saveAlert').classList.add('d-none'); }, 3000);
+          } else {
+            document.getElementById('saveError').textContent = d.error || 'Save failed';
+            document.getElementById('saveError').classList.remove('d-none');
+          }
+        })
+        .catch(function(e) {
+          document.getElementById('saveError').textContent = 'Error: ' + e.message;
+          document.getElementById('saveError').classList.remove('d-none');
+        });
+    });
   </script>
 </body>
 </html>
