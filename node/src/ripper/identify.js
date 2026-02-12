@@ -150,12 +150,10 @@ async function identify(job) {
     await getVideoDetails(job);
   }
 
-  // AI-enhanced identification: try to improve title if standard lookups
-  // didn't produce a nice title, or parse cryptic disc labels
+  // AI-powered identification: always use AI as the primary method
+  // for resolving disc labels and enriching metadata
   const config = job.config || {};
-  if (!job.hasnicetitle || !job.title) {
-    await enhanceIdentification(job, config);
-  }
+  await enhanceIdentification(job, config);
 
   logger.info(`Identified: ${job.disctype} - ${job.title || 'unknown'}`);
   return job;

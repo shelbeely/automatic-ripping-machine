@@ -21,6 +21,7 @@
   "license": "MIT",
   "type": "commonjs",
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.26.0",
     "axios": "^1.13.5",
     "bcryptjs": "^3.0.2",
     "better-sqlite3": "^12.2.0",

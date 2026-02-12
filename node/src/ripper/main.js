@@ -6,6 +6,8 @@ const { identify } = require('./identify');
 const armRipper = require('./arm_ripper');
 const musicBrainz = require('./music_brainz');
 const utils = require('./utils');
+const { requireAgent } = require('./ai_agent');
+const { initializeMcpApps, hasMcpAppsConfigured, disconnectAll: disconnectMcpApps } = require('../mcp/mcp_client');
 const { setupLogging, createLogger } = require('./logger');
 
 const logger = createLogger('main');
@@ -20,14 +22,31 @@ async function entry() {
   const devpath = args[0];
   logger.info(`ARM started for device: ${devpath}`);
 
+  // Validate AI configuration at startup — AI is required in this fork
+  const armConfig = loadConfig();
+  try {
+    requireAgent(armConfig);
+    logger.info('AI agent configured and ready');
+  } catch (err) {
+    logger.error(`AI configuration error: ${err.message}`);
+    logger.error('This fork requires an AI API key. See README.md for setup instructions.');
+    process.exit(1);
+  }
+
+  // Initialize MCP app connections (if configured)
+  if (hasMcpAppsConfigured(armConfig)) {
+    try {
+      await initializeMcpApps(armConfig);
+    } catch (err) {
+      logger.warn(`MCP apps initialization failed (continuing without): ${err.message}`);
+    }
+  }
+
   // Check for duplicate runs
   if (utils.duplicateRunCheck(devpath)) {
     logger.warn(`Duplicate run detected for ${devpath}, exiting`);
     process.exit(1);
   }
-
-  // Load config
-  const armConfig = loadConfig();
 
   // Create job
   const job = new Job({
@@ -63,6 +82,9 @@ async function entry() {
       stop_time: new Date().toISOString(),
     }, job);
   }
+
+  // Disconnect MCP apps on exit
+  await disconnectMcpApps();
 }
 
 async function main(logfile, job) {

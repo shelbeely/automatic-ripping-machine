@@ -1,5 +1,6 @@
 const {
   createAgent,
+  requireAgent,
   chatCompletion,
   parseAIResponse,
   parseDiscLabel,
@@ -68,6 +69,35 @@ describe('AI Agent', () => {
       });
       expect(agent.apiUrl).toBe('https://my-llm.example.com/v1/chat/completions');
       expect(agent.model).toBe('llama-3');
+    });
+  });
+
+  describe('requireAgent', () => {
+    const originalEnv = process.env;
+
+    beforeEach(() => {
+      process.env = { ...originalEnv };
+      delete process.env.ARM_AI_API_KEY;
+    });
+
+    afterAll(() => {
+      process.env = originalEnv;
+    });
+
+    test('should throw when no API key is configured', () => {
+      expect(() => requireAgent({})).toThrow('AI agent API key is required');
+    });
+
+    test('should return agent when API key is configured', () => {
+      const agent = requireAgent({ AI_API_KEY: 'test-key' });
+      expect(agent).not.toBeNull();
+      expect(agent.apiKey).toBe('test-key');
+    });
+
+    test('should return agent from environment variable', () => {
+      process.env.ARM_AI_API_KEY = 'env-key';
+      const agent = requireAgent({});
+      expect(agent.apiKey).toBe('env-key');
     });
   });
 
@@ -283,7 +313,7 @@ describe('AI Agent', () => {
   });
 
   describe('enhanceIdentification', () => {
-    test('should skip when no API key configured', async () => {
+    test('should warn but still return job when no API key configured', async () => {
       const job = { label: 'TEST', hasnicetitle: false, title: '' };
       const result = await enhanceIdentification(job, {});
       expect(result).toBe(job);

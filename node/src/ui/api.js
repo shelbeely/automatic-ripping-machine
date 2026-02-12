@@ -7,6 +7,7 @@ const { Track } = require('../models/track');
 const { Notification } = require('../models/notifications');
 const { Config } = require('../models/config_model');
 const { createLogger } = require('../ripper/logger');
+const { callToolAuto, listAllTools } = require('../mcp/mcp_client');
 
 const logger = createLogger('api');
 
@@ -152,15 +153,9 @@ router.post('/ai/identify', async (req, res) => {
       return res.status(400).json({ success: false, error: 'label is required' });
     }
     const { loadConfig } = require('../config/config');
-    const { createAgent, parseDiscLabel } = require('../ripper/ai_agent');
+    const { requireAgent, parseDiscLabel } = require('../ripper/ai_agent');
     const config = loadConfig();
-    const agent = createAgent(config);
-    if (!agent) {
-      return res.status(503).json({
-        success: false,
-        error: 'AI agent not configured. Set AI_API_KEY in configuration or ARM_AI_API_KEY environment variable.',
-      });
-    }
+    const agent = requireAgent(config);
     const result = await parseDiscLabel(agent, label, disctype || 'unknown');
     if (result) {
       res.json({ success: true, result });
@@ -180,15 +175,9 @@ router.post('/ai/diagnose', async (req, res) => {
       return res.status(400).json({ success: false, error: 'errorLog is required' });
     }
     const { loadConfig } = require('../config/config');
-    const { createAgent, diagnoseError } = require('../ripper/ai_agent');
+    const { requireAgent, diagnoseError } = require('../ripper/ai_agent');
     const config = loadConfig();
-    const agent = createAgent(config);
-    if (!agent) {
-      return res.status(503).json({
-        success: false,
-        error: 'AI agent not configured. Set AI_API_KEY in configuration or ARM_AI_API_KEY environment variable.',
-      });
-    }
+    const agent = requireAgent(config);
     const result = await diagnoseError(agent, errorLog, { phase, tool, disctype, title });
     if (result) {
       res.json({ success: true, result });
@@ -205,15 +194,9 @@ router.post('/ai/transcode', async (req, res) => {
   try {
     const { videoInfo, disctype } = req.body;
     const { loadConfig } = require('../config/config');
-    const { createAgent, recommendTranscodeSettings } = require('../ripper/ai_agent');
+    const { requireAgent, recommendTranscodeSettings } = require('../ripper/ai_agent');
     const config = loadConfig();
-    const agent = createAgent(config);
-    if (!agent) {
-      return res.status(503).json({
-        success: false,
-        error: 'AI agent not configured. Set AI_API_KEY in configuration or ARM_AI_API_KEY environment variable.',
-      });
-    }
+    const agent = requireAgent(config);
     const job = { disctype: disctype || DEFAULT_DISC_TYPE, config };
     const result = await recommendTranscodeSettings(agent, videoInfo || {}, job);
     if (result) {
@@ -234,21 +217,43 @@ router.post('/ai/filename', async (req, res) => {
       return res.status(400).json({ success: false, error: 'title or label is required' });
     }
     const { loadConfig } = require('../config/config');
-    const { createAgent, generateMediaFilename } = require('../ripper/ai_agent');
+    const { requireAgent, generateMediaFilename } = require('../ripper/ai_agent');
     const config = loadConfig();
-    const agent = createAgent(config);
-    if (!agent) {
-      return res.status(503).json({
-        success: false,
-        error: 'AI agent not configured. Set AI_API_KEY in configuration or ARM_AI_API_KEY environment variable.',
-      });
-    }
+    const agent = requireAgent(config);
     const job = { title, year, video_type: videoType, label, disctype: disctype || DEFAULT_DISC_TYPE, config };
     const result = await generateMediaFilename(agent, job, trackInfo || {});
     if (result) {
       res.json({ success: true, result });
     } else {
       res.json({ success: false, error: 'AI could not generate filename' });
+    }
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// MCP Apps: list all tools from connected MCP apps
+router.get('/mcp/tools', (req, res) => {
+  try {
+    const tools = listAllTools();
+    res.json({ success: true, tools });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// MCP Apps: call a tool on a connected MCP app
+router.post('/mcp/call', async (req, res) => {
+  try {
+    const { toolName, args } = req.body;
+    if (!toolName) {
+      return res.status(400).json({ success: false, error: 'toolName is required' });
+    }
+    const result = await callToolAuto(toolName, args || {});
+    if (result) {
+      res.json({ success: true, result });
+    } else {
+      res.json({ success: false, error: `Tool "${toolName}" not available or call failed` });
     }
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });

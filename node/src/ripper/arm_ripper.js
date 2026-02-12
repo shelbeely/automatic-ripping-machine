@@ -5,7 +5,7 @@ const handbrake = require('./handbrake');
 const ffmpeg = require('./ffmpeg');
 const utils = require('./utils');
 const { createLogger } = require('./logger');
-const { createAgent, recommendTranscodeSettings, diagnoseError } = require('./ai_agent');
+const { createAgent, requireAgent, recommendTranscodeSettings, diagnoseError } = require('./ai_agent');
 
 const logger = createLogger('arm_ripper');
 
@@ -82,8 +82,10 @@ async function startTranscode(job, logfile, rawInPath, transcodeOutPath, protect
         job.ai_transcode_recommendation = recommendation;
       }
     } catch (err) {
-      logger.warn(`AI transcode recommendation failed: ${err.message}`);
+      logger.warn(`AI transcode recommendation failed (continuing with defaults): ${err.message}`);
     }
+  } else {
+    logger.warn('AI agent not configured — using default transcode settings. Set AI_API_KEY for optimized encoding.');
   }
 
   await utils.databaseUpdater({ status: 'transcoding' }, job);
@@ -146,10 +148,10 @@ async function ripVisualMedia(haveDupes, job, logfile, protection) {
     logger.error(`Rip failed: ${err.message}`);
 
     // AI agent: diagnose the error
-    const agent = createAgent(config);
-    if (agent) {
+    const diagAgent = createAgent(config);
+    if (diagAgent) {
       try {
-        const diagnosis = await diagnoseError(agent, err.message, {
+        const diagnosis = await diagnoseError(diagAgent, err.message, {
           phase: job.status || 'unknown',
           tool: config.USE_FFMPEG ? 'FFmpeg' : 'HandBrake/MakeMKV',
           disctype: job.disctype,

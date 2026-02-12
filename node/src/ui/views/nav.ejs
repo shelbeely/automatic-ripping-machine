@@ -15,6 +15,14 @@
         <li class="nav-item"><a class="nav-link" href="/settings">Settings</a></li>
         <li class="nav-item"><a class="nav-link" href="/logs">Logs</a></li>
         <li class="nav-item"><a class="nav-link" href="/notifications">Notifications</a></li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">AI Tools</a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="/ai">AI Dashboard</a></li>
+            <li><a class="dropdown-item" href="/mcp">MCP Server</a></li>
+            <li><a class="dropdown-item" href="/mcp/apps">MCP Apps</a></li>
+          </ul>
+        </li>
       </ul>
       <ul class="navbar-nav">
         <% if (typeof isAuthenticated !== 'undefined' && isAuthenticated) { %>

@@ -28,23 +28,39 @@ Insert an optical disc (Blu-ray, DVD, CD) and checks to see if it's audio, video
 
 See: https://b3n.org/automatic-ripping-machine
 
+## Node.js AI-First Fork
+
+This fork includes a complete Node.js port with AI-first architecture. See [`node/README.md`](node/README.md) for full details.
+
+**Key additions:**
+- **AI-powered pipeline** — disc identification, transcode optimization, error diagnosis, and file naming all driven by LLM
+- **MCP support** — ARM is both an [MCP](https://modelcontextprotocol.io) server (web UI and external apps interact with it) and MCP client (ARM uses external MCP tool servers)
+- **Node.js/Express** — modern JavaScript stack with Express, Knex, better-sqlite3, EJS views
+
+```bash
+cd node && npm install
+export ARM_AI_API_KEY=sk-your-key
+npm run start:ui
+```
 
 ## Features
 
 - Detects insertion of disc using udev
 - Determines disc type...
   - If video (Blu-ray or DVD)
-    - Retrieve title from disc or [OMDb API](http://www.omdbapi.com/) to name the folder "Movie Title (Year)" so that Plex or Emby can pick it up
-    - Determine if video is Movie or TV using [OMDb API](http://www.omdbapi.com/)
+    - **AI-powered** title identification from disc labels, with [OMDb API](http://www.omdbapi.com/) and TMDB fallback
+    - **AI-optimized** transcode settings based on source video analysis
     - Rip using MakeMKV or HandBrake (can rip all features or main feature)
-    - Eject disc and queue up Handbrake transcoding when done
-    - Transcoding jobs are asynchronously batched from ripping
-    - Send notifications via IFTTT, Pushbullet, Slack, Discord, and many more!
+    - **AI-generated** Plex/Emby/Jellyfin-compatible filenames and directories
+    - **AI error diagnosis** with actionable fix suggestions when rips fail
+    - Send notifications via IFTTT, Pushbullet, Pushover, JSON webhooks, and more!
   - If audio (CD) - rip using abcde (get disc-data and album art from [musicbrainz](https://musicbrainz.org/))
   - If data (Blu-ray, DVD, DVD-Audio or CD) - make an ISO backup
+- **MCP server** — web UI and external apps interact with ARM via Model Context Protocol
+- **MCP client** — ARM can use external MCP tool servers (media databases, file organizers, etc.)
 - Headless, designed to be run from a server
 - Can rip from multiple-optical drives in parallel
-- Python Flask UI to interact with ripping jobs, view logs, update jobs, etc
+- Node.js Express web UI to interact with ripping jobs, view logs, manage AI tools and MCP apps
 
 
 

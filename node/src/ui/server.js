@@ -104,6 +104,34 @@ async function createApp(options = {}) {
   app.use('/', notificationRoutes);
   app.use('/api', apiRoutes);
 
+  // MCP Server — exposes ARM as an MCP app that the web UI and external clients connect to
+  const { loadConfig: loadArmConfig } = require('../config/config');
+  const { createMcpRouter } = require('../mcp/mcp_server');
+  const armConfig = loadArmConfig();
+  app.use('/mcp', createMcpRouter(armConfig));
+
+  // MCP Client — connects to external MCP tool servers that ARM can use
+  const { initializeMcpApps, listAllTools, getConnectedCount, hasMcpAppsConfigured, parseMcpAppsConfig } = require('../mcp/mcp_client');
+  if (hasMcpAppsConfigured(armConfig)) {
+    initializeMcpApps(armConfig).catch((err) => {
+      logger.warn(`MCP apps initialization failed: ${err.message}`);
+    });
+  }
+
+  // MCP status page — shows both server info and connected external apps
+  app.get('/mcp/apps', (req, res) => {
+    const tools = listAllTools();
+    const connectedCount = getConnectedCount();
+    const configs = parseMcpAppsConfig(armConfig);
+    res.render('mcp', {
+      title: 'ARM - MCP Apps',
+      tools,
+      connectedCount,
+      configuredCount: configs.length,
+      configs,
+    });
+  });
+
   // Home route
   app.get('/', async (req, res) => {
     try {

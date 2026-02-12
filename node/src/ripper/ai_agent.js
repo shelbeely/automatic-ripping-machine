@@ -1,12 +1,14 @@
 /**
- * AI Agent for disc title identification and metadata resolution.
+ * AI Agent — core intelligence layer for ARM.
  *
  * Uses an OpenAI-compatible chat completions API (configurable endpoint)
- * to intelligently parse disc labels, resolve ambiguous metadata, and
- * provide fallback identification when OMDB/TMDB lookups fail.
+ * to intelligently parse disc labels, resolve ambiguous metadata,
+ * recommend transcode settings, diagnose errors, and generate
+ * media-library filenames.
  *
- * The agent is completely optional — if no API key is configured, the
- * ripping pipeline falls back to the standard OMDB/TMDB identification.
+ * AI is a **required** component of this fork. An API key must be
+ * configured via `AI_API_KEY` in arm.yaml or the `ARM_AI_API_KEY`
+ * environment variable. The ripping pipeline will not start without it.
  */
 const axios = require('axios');
 const { createLogger } = require('./logger');
@@ -20,17 +22,34 @@ const DEFAULT_MODEL = 'gpt-4o-mini';
 
 /**
  * Build an AI agent client from configuration.
- * Returns null if no API key is set.
+ *
+ * AI is core to this fork — a missing API key is a configuration error.
+ * In validation mode (validate=true), throws an error if unconfigured.
+ * In graceful mode (validate=false), returns null for backward compat
+ * with tests that don't supply keys.
  */
-function createAgent(config) {
+function createAgent(config, { validate = false } = {}) {
   const apiKey = (config && config.AI_API_KEY) || process.env.ARM_AI_API_KEY || '';
   if (!apiKey) {
+    if (validate) {
+      throw new Error(
+        'AI agent API key is required. Set AI_API_KEY in arm.yaml or ARM_AI_API_KEY environment variable.'
+      );
+    }
     return null;
   }
   const apiUrl = (config && config.AI_API_URL) || process.env.ARM_AI_API_URL || DEFAULT_API_URL;
   const model = (config && config.AI_MODEL) || process.env.ARM_AI_MODEL || DEFAULT_MODEL;
 
   return { apiKey, apiUrl, model };
+}
+
+/**
+ * Require an AI agent — throws if not configured.
+ * Use this at pipeline entry points to fail fast.
+ */
+function requireAgent(config) {
+  return createAgent(config, { validate: true });
 }
 
 /**
@@ -174,16 +193,16 @@ async function identifyUnknownDisc(agent, job) {
  * High-level function: enhance a job's title identification using AI.
  *
  * This is the main integration point called from identify.js.
- * It tries to improve the title in several ways:
- * 1. Parse the raw disc label into a clean title
+ * AI is the primary identification method in this fork:
+ * 1. Always parse the raw disc label into a clean title via AI
  * 2. If no title was found at all, try to identify from context
  *
- * Returns the updated job, or the original job if AI is unavailable.
+ * Returns the updated job. Logs a warning if AI is unconfigured.
  */
 async function enhanceIdentification(job, config) {
   const agent = createAgent(config);
   if (!agent) {
-    logger.debug('AI agent not configured, skipping enhancement');
+    logger.warn('AI agent not configured — disc identification quality will be degraded. Set AI_API_KEY in config.');
     return job;
   }
 
@@ -348,6 +367,7 @@ async function generateMediaFilename(agent, job, trackInfo = {}) {
 
 module.exports = {
   createAgent,
+  requireAgent,
   chatCompletion,
   parseAIResponse,
   parseDiscLabel,
