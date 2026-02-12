@@ -1,38 +1,38 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ARM - System Info</title>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
-  <link rel="stylesheet" href="/static/css/style.css">
-  <script type="importmap">
-  {
-    "imports": {
-      "@material/web/": "https://esm.run/@material/web@2.4.0/"
-    }
-  }
-  </script>
-  <script type="module">
-    import '@material/web/all.js';
-    import {styles as typescaleStyles} from '@material/web/typography/md-typescale-styles.js';
-    document.adoptedStyleSheets.push(typescaleStyles.styleSheet);
-  </script>
+  <%- include('head') %>
 </head>
 <body class="dark">
   <%- include('nav') %>
   <div class="page">
     <h5>System Information</h5>
     <div class="md3-card">
-      <table class="md3-table">
-        <tr><td><strong>Hostname</strong></td><td><%= hostname %></td></tr>
-        <tr><td><strong>Platform</strong></td><td><%= platform %></td></tr>
-        <tr><td><strong>CPU</strong></td><td><%= systemInfo.cpu %></td></tr>
-        <tr><td><strong>Memory</strong></td><td><%= systemInfo.mem_total %> GB</td></tr>
-        <tr><td><strong>Uptime</strong></td><td><%= Math.floor(uptime / 3600) %>h <%= Math.floor((uptime % 3600) / 60) %>m</td></tr>
-      </table>
+      <div class="mdc-data-table">
+        <div class="mdc-data-table__table-container">
+          <table class="mdc-data-table__table" aria-label="System information">
+            <tbody class="mdc-data-table__content">
+              <tr class="mdc-data-table__row"><td class="mdc-data-table__cell"><strong>Hostname</strong></td><td class="mdc-data-table__cell"><%= hostname %></td></tr>
+              <tr class="mdc-data-table__row"><td class="mdc-data-table__cell"><strong>Platform</strong></td><td class="mdc-data-table__cell"><%= platform %></td></tr>
+              <tr class="mdc-data-table__row"><td class="mdc-data-table__cell"><strong>CPU</strong></td><td class="mdc-data-table__cell"><%= systemInfo.cpu %></td></tr>
+              <tr class="mdc-data-table__row"><td class="mdc-data-table__cell"><strong>Memory</strong></td><td class="mdc-data-table__cell"><%= systemInfo.mem_total %> GB</td></tr>
+              <tr class="mdc-data-table__row"><td class="mdc-data-table__cell"><strong>Uptime</strong></td><td class="mdc-data-table__cell"><%= Math.floor(uptime / 3600) %>h <%= Math.floor((uptime % 3600) / 60) %>m</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   </div>
+  </div>
+  <script>
+    var drawer = mdc.drawer.MDCDrawer.attachTo(document.querySelector('.mdc-drawer'));
+    var topAppBar = mdc.topAppBar.MDCTopAppBar.attachTo(document.querySelector('.mdc-top-app-bar'));
+    topAppBar.setScrollTarget(document.querySelector('.page'));
+    topAppBar.listen('MDCTopAppBar:nav', function() {
+      drawer.open = !drawer.open;
+    });
+    if (window.innerWidth >= 993) drawer.open = true;
+  </script>
 </body>
 </html>

@@ -1,24 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><%= typeof title !== 'undefined' ? title : 'ARM' %></title>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
-  <link rel="stylesheet" href="/static/css/style.css">
-  <script type="importmap">
-  {
-    "imports": {
-      "@material/web/": "https://esm.run/@material/web@2.4.0/"
-    }
-  }
-  </script>
-  <script type="module">
-    import '@material/web/all.js';
-    import {styles as typescaleStyles} from '@material/web/typography/md-typescale-styles.js';
-    document.adoptedStyleSheets.push(typescaleStyles.styleSheet);
-  </script>
+  <%- include('head') %>
 </head>
 <body class="dark">
   <%- include('nav') %>
@@ -29,24 +13,36 @@
         <div class="md3-card">
           <h6 class="md-typescale-title-medium">Active Jobs</h6>
           <% if (typeof jobs !== 'undefined' && jobs.length > 0) { %>
-            <table class="md3-table">
-              <thead>
-                <tr><th>ID</th><th>Title</th><th>Type</th><th>Status</th><th>Progress</th><th>Started</th><th>Actions</th></tr>
-              </thead>
-              <tbody>
-                <% jobs.forEach(function(job) { %>
-                  <tr>
-                    <td><a href="/jobdetail?job_id=<%= job.job_id %>"><%= job.job_id %></a></td>
-                    <td><%= job.title || 'Unknown' %></td>
-                    <td><%= job.disctype %></td>
-                    <td><span class="status-chip <%= job.status === 'ripping' ? 'primary' : (job.status === 'transcoding' ? 'secondary' : 'success') %>"><%= job.status %></span></td>
-                    <td><%= job.progress || 'N/A' %></td>
-                    <td><%= new Date(job.start_time).toLocaleString() %></td>
-                    <td><a href="/jobdetail?job_id=<%= job.job_id %>"><md-outlined-button>Details</md-outlined-button></a></td>
-                  </tr>
-                <% }); %>
-              </tbody>
-            </table>
+            <div class="mdc-data-table">
+              <div class="mdc-data-table__table-container">
+                <table class="mdc-data-table__table" aria-label="Active jobs">
+                  <thead>
+                    <tr class="mdc-data-table__header-row">
+                      <th class="mdc-data-table__header-cell" role="columnheader" scope="col">ID</th>
+                      <th class="mdc-data-table__header-cell" role="columnheader" scope="col">Title</th>
+                      <th class="mdc-data-table__header-cell" role="columnheader" scope="col">Type</th>
+                      <th class="mdc-data-table__header-cell" role="columnheader" scope="col">Status</th>
+                      <th class="mdc-data-table__header-cell" role="columnheader" scope="col">Progress</th>
+                      <th class="mdc-data-table__header-cell" role="columnheader" scope="col">Started</th>
+                      <th class="mdc-data-table__header-cell" role="columnheader" scope="col">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="mdc-data-table__content">
+                    <% jobs.forEach(function(job) { %>
+                      <tr class="mdc-data-table__row">
+                        <td class="mdc-data-table__cell"><a href="/jobdetail?job_id=<%= job.job_id %>"><%= job.job_id %></a></td>
+                        <td class="mdc-data-table__cell"><%= job.title || 'Unknown' %></td>
+                        <td class="mdc-data-table__cell"><%= job.disctype %></td>
+                        <td class="mdc-data-table__cell"><span class="status-chip <%= job.status === 'ripping' ? 'primary' : (job.status === 'transcoding' ? 'secondary' : 'success') %>"><%= job.status %></span></td>
+                        <td class="mdc-data-table__cell"><%= job.progress || 'N/A' %></td>
+                        <td class="mdc-data-table__cell"><%= new Date(job.start_time).toLocaleString() %></td>
+                        <td class="mdc-data-table__cell"><a href="/jobdetail?job_id=<%= job.job_id %>"><md-outlined-button>Details</md-outlined-button></a></td>
+                      </tr>
+                    <% }); %>
+                  </tbody>
+                </table>
+              </div>
+            </div>
           <% } else { %>
             <p>No active jobs</p>
           <% } %>
@@ -63,5 +59,16 @@
       </div>
     </div>
   </div>
+  </div>
+  <script src="/static/js/app.js"></script>
+  <script>
+    var drawer = mdc.drawer.MDCDrawer.attachTo(document.querySelector('.mdc-drawer'));
+    var topAppBar = mdc.topAppBar.MDCTopAppBar.attachTo(document.querySelector('.mdc-top-app-bar'));
+    topAppBar.setScrollTarget(document.querySelector('.page'));
+    topAppBar.listen('MDCTopAppBar:nav', function() {
+      drawer.open = !drawer.open;
+    });
+    if (window.innerWidth >= 993) drawer.open = true;
+  </script>
 </body>
 </html>

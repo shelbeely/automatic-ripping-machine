@@ -1,72 +1,93 @@
-<header class="md3-app-bar">
-  <md-icon-button onclick="document.getElementById('nav-drawer').classList.toggle('open')">
-    <i class="material-icons-outlined">menu</i>
-  </md-icon-button>
-  <h6>ARM</h6>
-  <% if (typeof isAuthenticated !== 'undefined' && isAuthenticated) { %>
-    <a href="/update_password" title="Change Password">
-      <md-icon-button><i class="material-icons-outlined">key</i></md-icon-button>
-    </a>
-    <a href="/logout" title="Logout">
-      <md-icon-button><i class="material-icons-outlined">logout</i></md-icon-button>
-    </a>
-  <% } else { %>
-    <a href="/login" title="Login">
-      <md-icon-button><i class="material-icons-outlined">login</i></md-icon-button>
-    </a>
-  <% } %>
-</header>
-
-<nav id="nav-drawer" class="md3-nav-drawer">
-  <div class="drawer-header">
+<!-- MDC Dismissible Drawer — https://m2.material.io/components/navigation-drawer/web -->
+<aside class="mdc-drawer mdc-drawer--dismissible" id="nav-drawer">
+  <div class="mdc-drawer__header">
     <img src="/static/img/arm_logo.png" alt="ARM" height="30" onerror="this.style.display='none'">
-    <h5>ARM</h5>
+    <h3 class="mdc-drawer__title">ARM</h3>
   </div>
+  <div class="mdc-drawer__content">
+    <nav class="mdc-list">
+      <a class="mdc-list-item" href="/" aria-current="<%= typeof currentPath !== 'undefined' && currentPath === '/' ? 'page' : '' %>">
+        <span class="mdc-list-item__ripple"></span>
+        <i class="material-icons-outlined mdc-list-item__graphic" aria-hidden="true">home</i>
+        <span class="mdc-list-item__text">Home</span>
+      </a>
+      <a class="mdc-list-item" href="/activerips" aria-current="<%= typeof currentPath !== 'undefined' && currentPath === '/activerips' ? 'page' : '' %>">
+        <span class="mdc-list-item__ripple"></span>
+        <i class="material-icons-outlined mdc-list-item__graphic" aria-hidden="true">album</i>
+        <span class="mdc-list-item__text">Active Rips</span>
+      </a>
+      <a class="mdc-list-item" href="/history" aria-current="<%= typeof currentPath !== 'undefined' && currentPath === '/history' ? 'page' : '' %>">
+        <span class="mdc-list-item__ripple"></span>
+        <i class="material-icons-outlined mdc-list-item__graphic" aria-hidden="true">history</i>
+        <span class="mdc-list-item__text">History</span>
+      </a>
+      <a class="mdc-list-item" href="/settings" aria-current="<%= typeof currentPath !== 'undefined' && currentPath === '/settings' ? 'page' : '' %>">
+        <span class="mdc-list-item__ripple"></span>
+        <i class="material-icons-outlined mdc-list-item__graphic" aria-hidden="true">settings</i>
+        <span class="mdc-list-item__text">Settings</span>
+      </a>
+      <a class="mdc-list-item" href="/logs" aria-current="<%= typeof currentPath !== 'undefined' && currentPath === '/logs' ? 'page' : '' %>">
+        <span class="mdc-list-item__ripple"></span>
+        <i class="material-icons-outlined mdc-list-item__graphic" aria-hidden="true">description</i>
+        <span class="mdc-list-item__text">Logs</span>
+      </a>
+      <a class="mdc-list-item" href="/notifications" aria-current="<%= typeof currentPath !== 'undefined' && currentPath === '/notifications' ? 'page' : '' %>">
+        <span class="mdc-list-item__ripple"></span>
+        <i class="material-icons-outlined mdc-list-item__graphic" aria-hidden="true">notifications</i>
+        <span class="mdc-list-item__text">Notifications</span>
+      </a>
 
-  <a href="/">
-    <i class="material-icons-outlined">home</i>
-    <div>Home</div>
-  </a>
-  <a href="/activerips">
-    <i class="material-icons-outlined">album</i>
-    <div>Active Rips</div>
-  </a>
-  <a href="/history">
-    <i class="material-icons-outlined">history</i>
-    <div>History</div>
-  </a>
-  <a href="/settings">
-    <i class="material-icons-outlined">settings</i>
-    <div>Settings</div>
-  </a>
-  <a href="/logs">
-    <i class="material-icons-outlined">description</i>
-    <div>Logs</div>
-  </a>
-  <a href="/notifications">
-    <i class="material-icons-outlined">notifications</i>
-    <div>Notifications</div>
-  </a>
+      <hr class="mdc-list-divider">
 
-  <md-divider></md-divider>
+      <a class="mdc-list-item" href="/ai" aria-current="<%= typeof currentPath !== 'undefined' && currentPath === '/ai' ? 'page' : '' %>">
+        <span class="mdc-list-item__ripple"></span>
+        <i class="material-icons-outlined mdc-list-item__graphic" aria-hidden="true">psychology</i>
+        <span class="mdc-list-item__text">AI Dashboard</span>
+      </a>
+      <a class="mdc-list-item" href="/mcp" aria-current="<%= typeof currentPath !== 'undefined' && currentPath === '/mcp' ? 'page' : '' %>">
+        <span class="mdc-list-item__ripple"></span>
+        <i class="material-icons-outlined mdc-list-item__graphic" aria-hidden="true">hub</i>
+        <span class="mdc-list-item__text">MCP Server</span>
+      </a>
+      <a class="mdc-list-item" href="/mcp/apps" aria-current="<%= typeof currentPath !== 'undefined' && currentPath === '/mcp/apps' ? 'page' : '' %>">
+        <span class="mdc-list-item__ripple"></span>
+        <i class="material-icons-outlined mdc-list-item__graphic" aria-hidden="true">apps</i>
+        <span class="mdc-list-item__text">MCP Apps</span>
+      </a>
 
-  <a href="/ai">
-    <i class="material-icons-outlined">psychology</i>
-    <div>AI Dashboard</div>
-  </a>
-  <a href="/mcp">
-    <i class="material-icons-outlined">hub</i>
-    <div>MCP Server</div>
-  </a>
-  <a href="/mcp/apps">
-    <i class="material-icons-outlined">apps</i>
-    <div>MCP Apps</div>
-  </a>
+      <hr class="mdc-list-divider">
 
-  <md-divider></md-divider>
+      <a class="mdc-list-item" href="/send" aria-current="<%= typeof currentPath !== 'undefined' && currentPath === '/send' ? 'page' : '' %>">
+        <span class="mdc-list-item__ripple"></span>
+        <i class="material-icons-outlined mdc-list-item__graphic" aria-hidden="true">video_library</i>
+        <span class="mdc-list-item__text">Completed Media</span>
+      </a>
+    </nav>
+  </div>
+</aside>
 
-  <a href="/send">
-    <i class="material-icons-outlined">video_library</i>
-    <div>Completed Media</div>
-  </a>
-</nav>
+<!-- MDC Top App Bar — https://m2.material.io/components/app-bars-top/web -->
+<div class="mdc-drawer-app-content">
+  <header class="mdc-top-app-bar mdc-top-app-bar--fixed" id="app-bar">
+    <div class="mdc-top-app-bar__row">
+      <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-start">
+        <button class="material-icons-outlined mdc-top-app-bar__navigation-icon mdc-icon-button" id="nav-toggle">menu</button>
+        <span class="mdc-top-app-bar__title">ARM</span>
+      </section>
+      <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-end" role="toolbar">
+        <% if (typeof isAuthenticated !== 'undefined' && isAuthenticated) { %>
+          <a href="/update_password" title="Change Password">
+            <button class="material-icons-outlined mdc-top-app-bar__action-item mdc-icon-button" aria-label="Change Password">key</button>
+          </a>
+          <a href="/logout" title="Logout">
+            <button class="material-icons-outlined mdc-top-app-bar__action-item mdc-icon-button" aria-label="Logout">logout</button>
+          </a>
+        <% } else { %>
+          <a href="/login" title="Login">
+            <button class="material-icons-outlined mdc-top-app-bar__action-item mdc-icon-button" aria-label="Login">login</button>
+          </a>
+        <% } %>
+      </section>
+    </div>
+  </header>
+
