@@ -43,7 +43,7 @@
               <div class="s12 m8">
                 <% if (booleanKeys.indexOf(key) !== -1) { %>
                   <label class="switch">
-                    <input type="checkbox" id="<%= key %>" name="<%= key %>" <%= config[key] ? 'checked' : '' %>>
+                    <input type="checkbox" id="<%= key %>" name="<%= key %>" <%= config[key] === true ? 'checked' : '' %>>
                     <span></span>
                   </label>
                 <% } else if (selectKeys[key]) { %>
