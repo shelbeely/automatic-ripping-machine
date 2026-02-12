@@ -1,54 +1,70 @@
 ## Contents
-1. [Hardware Requirements](https://github.com/automatic-ripping-machine/automatic-ripping-machine/wiki/Getting-Started#Hardware-Requirements)
-2. [Installation](https://github.com/automatic-ripping-machine/automatic-ripping-machine/wiki/Getting-Started#Installation)
-3. [Docker Setup](https://github.com/automatic-ripping-machine/automatic-ripping-machine/wiki/Getting-Started#Docker-Setup)
-4. [Virtual Machine Setup](https://github.com/automatic-ripping-machine/automatic-ripping-machine/wiki/Getting-Started#Virtual-Machine-Setup)
-5. [ARM Configuration](https://github.com/automatic-ripping-machine/automatic-ripping-machine/wiki/Getting-Started#ARM-Configuration)
-6. [Additional Hardware Setup](https://github.com/automatic-ripping-machine/automatic-ripping-machine/wiki/Getting-Started#Additional-Hardware-Setup)
+1. [Hardware Requirements](#hardware-requirements)
+2. [Installation](#installation)
+3. [Node.js Installation (Recommended)](#nodejs-installation-recommended)
+4. [Docker Setup](#docker-setup)
+5. [Virtual Machine Setup](#virtual-machine-setup)
+6. [ARM Configuration](#arm-configuration)
+7. [AI Configuration (Required)](#ai-configuration-required)
+8. [Additional Hardware Setup](#additional-hardware-setup)
 
 ## Hardware Requirements
 
-Operation of ARM does not require much in the way of system requirements, although it goes with out saying that a faster processor and more memory will rip media much faster. System storage is an important requirement to pay attention to, otherwise jobs will fail whilst processing if storage reaches 100%.
-- Host OS:
-   - Debian 10 (buster) ***ongoing support dropped end of 2022***
-   - Open Media Vault (5.x) ***ongoing support dropped end of 2022***
-   - Ubuntu Server 18.04 - Needs Multiverse and Universe repositories ***ongoing support dropped end of 2022***
-   - Ubuntu 20.04 - Needs Multiverse and Universe repositories
-   - **Might work with other Linux distros but this isn't tested
-- Hardware:
-   - The below are the minimum requirements to support handbrake transcoding of video files, one of the most intensive part of ARM - [Handbrake requirements](https://handbrake.fr/docs/en/latest/technical/system-requirements.html).
+Operation of ARM does not require much in the way of system requirements, although a faster processor and more memory will rip media faster. System storage is an important requirement — jobs will fail if storage reaches 100%.
+
+- **Host OS**: Any Linux distribution with Node.js 18+ support (Ubuntu, Debian, Fedora, etc.)
+- **Node.js**: Version 18 or later (LTS recommended)
+- **Hardware**:
+   - The below are the minimum requirements to support HandBrake transcoding of video files — [HandBrake requirements](https://handbrake.fr/docs/en/latest/technical/system-requirements.html).
    - Processor:
       - AMD Ryzen, Threadripper, or Epyc
       - Intel Core (6th generation and newer) i3, i5, i7, i9, or equivalent Xeon
    - Free memory:
-      - Depends on settings used but as a general guide:
       - 1 GB for transcoding standard definition video (480p/576p)
       - 2 to 8 GB for transcoding high definition video (720p/1080p)
       - 6 to 16 GB or more for transcoding ultra high definition video (2160p 4K)
-   - One or more optical drives to rip Blu-Rays, DVDs, and CDs
-   (Optional)
-   - a (GPU)[#Additional-Hardware-Setup]
-- Storage:
-   - ARM Docker container 2-4 GB
-   - Audio CD: <1GB per CD ripped
-   - ARM transcode and completed folders: 10 GB or more recommended for processing and storing your new videos
-   - Blurays: requires a minimum of 10-20 GB free space to complete a rip
+   - One or more optical drives to rip Blu-rays, DVDs, and CDs
+   - (Optional) A [GPU](#additional-hardware-setup) for hardware-accelerated transcoding
+- **Storage**:
+   - Audio CD: <1 GB per CD ripped
+   - ARM transcode and completed folders: 10 GB or more recommended
+   - Blu-rays: requires a minimum of 10-20 GB free space to complete a rip
+- **AI API Key**: An OpenAI-compatible API key is **required** (see [AI Configuration](#ai-configuration-required))
 - Some free time to set everything up
 
 
 ## Installation
 
 ARM can be installed in multiple ways:
-- Docker install on a bare metal server/PC
-- Docker install in a VM, on a bare metal server/PC
-- On a bare metal server/PC ***Note not prefered option***
+- **Node.js installation** on a bare metal server/PC (recommended for new setups)
+- **Docker install** on a bare metal server/PC or in a VM
+- **Legacy Python install** on bare metal (see Alternate Installations)
+
+### Node.js Installation (Recommended)
+
+The Node.js port is the primary development target. See [Node.js Installation](Node-Installation) for detailed instructions.
+
+**Quick start:**
+
+```bash
+# Prerequisites: Node.js 18+, MakeMKV, HandBrake CLI
+cd node
+npm install
+
+# Configure AI (required)
+export ARM_AI_API_KEY=sk-your-openai-api-key
+
+# Start the web UI
+npm run start:ui
+# Visit http://localhost:8080
+```
 
 ### Docker Setup
 
-ARM has a prebuilt docker image ready to go with minimal steps required to start, this is the best option for new users of ARM as it requires less setup and configuration - [prebuilt image](https://github.com/automatic-ripping-machine/automatic-ripping-machine/wiki/docker).
+ARM has a prebuilt Docker image ready to go with minimal steps required to start. This is a good option for users who prefer containerized deployments — [prebuilt image](docker).
 
-The alternative is to build the docker image from the ARM dockerfile on your system and
-       - [Build from Dockerfile](https://github.com/automatic-ripping-machine/automatic-ripping-machine/wiki/Building-ARM-docker-image-from-source)
+The alternative is to build the Docker image from the ARM Dockerfile on your system:
+- [Build from Dockerfile](Building-ARM-docker-image-from-source)
 
 ### Virtual Machine Setup
 
@@ -152,8 +168,27 @@ lsscsi
 
 ## ARM Configuration
 
-Once setup, ARM operates will operate with no changes to the default configuration. However, to get the most of ARM review the configuration files and modify to suit the media being ripped. See ARM [Configuration](https://github.com/automatic-ripping-machine/automatic-ripping-machine/wiki/Configuring-ARM) for more information.
+Once set up, ARM operates with the default configuration. However, to get the most out of ARM, review the configuration files and modify to suit the media being ripped. See ARM [Configuration](Configuring-ARM) for more information.
 
+## AI Configuration (Required)
+
+AI is a core component of this fork. You **must** configure an OpenAI-compatible API key:
+
+```yaml
+# In arm.yaml
+AI_API_KEY: "sk-your-api-key"
+AI_API_URL: "https://api.openai.com/v1/chat/completions"  # or any compatible endpoint
+AI_MODEL: "gpt-4o-mini"  # recommended for cost/quality balance
+```
+
+Or via environment variables:
+```bash
+export ARM_AI_API_KEY=sk-your-api-key
+export ARM_AI_API_URL=https://api.openai.com/v1/chat/completions
+export ARM_AI_MODEL=gpt-4o-mini
+```
+
+See [AI Agent](AI-Agent) for full details on AI capabilities and configuration.
 
 ## Additional Hardware Setup
 

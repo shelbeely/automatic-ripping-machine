@@ -1,5 +1,46 @@
 # Changelog
 
+## v3.0.0 — Node.js AI-First Fork
+
+Complete rewrite from Python/Flask to Node.js/Express with AI as a core requirement.
+
+### New Architecture
+- **Node.js runtime** with Express 5, Knex + better-sqlite3, EJS templates
+- **AI is required** — OpenAI-compatible LLM powers disc identification, transcode optimization, error diagnosis, and file naming
+- **MCP server** — ARM exposes 7 tools and 3 resources via Model Context Protocol (`/mcp/message`)
+- **MCP client** — ARM connects to external MCP tool servers configured in `MCP_APPS`
+- **Jest test suite** — 145+ tests across 11 test files
+
+### AI Capabilities
+- **Disc Identification** — Parses cryptic disc labels into clean titles, years, and types
+- **Transcode Optimization** — Analyzes video metadata and recommends optimal HandBrake/FFmpeg settings
+- **Error Diagnosis** — Analyzes rip/transcode error logs with severity, suggestions, and retry advice
+- **File Naming** — Generates Plex/Emby/Jellyfin-compatible filenames and directory structures
+
+### Web UI
+- Express 5 + EJS + Bootstrap
+- AI Tools dropdown (AI Dashboard, MCP Server, MCP Apps)
+- Session-based authentication with bcryptjs
+- Rate-limited API endpoints
+
+### API
+- REST API with consistent `{ success: boolean }` responses
+- AI endpoints: `/api/ai/identify`, `/api/ai/diagnose`, `/api/ai/transcode`, `/api/ai/filename`
+- MCP endpoints: `/api/mcp/tools`, `/api/mcp/call`
+- Job management: list, detail, delete, abandon, search
+
+### Documentation
+- Updated wiki for Node.js AI-first architecture
+- New wiki pages: AI Agent, MCP Integration, Node Installation, API Reference
+- Copilot custom instructions (`.github/copilot-instructions.md`)
+
+---
+
+## Legacy Python Changelog
+
+The following entries document the original Python version, preserved for historical reference.
+
+
 
 ## Current pre-release v2.5.0
   - Only one large item for this version.
