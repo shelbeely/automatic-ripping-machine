@@ -1,29 +1,27 @@
-**[Home](https://github.com/automatic-ripping-machine/automatic-ripping-machine/wiki)**
+**[Home](Home)**
 
 **Getting Started**
    - [Getting Started](Getting-Started)
+   - [Node.js Installation](Node-Installation)
 
    - **Docker**
        - [Pull prebuilt image](docker)
        - [Build from Dockerfile](Building-ARM-docker-image-from-source)
 
-   - **Manual Install**
+   - **Manual Install (Legacy)**
      - See Alternate Installations
-   
-   - **Automatic script install**
-       - [Open Media Vault/ Debian (Install script)](https://github.com/automatic-ripping-machine/automatic-ripping-machine/wiki/Setting-up-ARM-script-(Debian-OMV))
-       - [Ubuntu 20.04 (install script)](https://github.com/automatic-ripping-machine/automatic-ripping-machine/wiki/Ubuntu-20.04-Automatic-Installation)
-   - [Upgrading from old versions](https://github.com/automatic-ripping-machine/automatic-ripping-machine/wiki/upgrading)
 
-**Web Page Overview**
-  - _Coming Soon_
-  - [Jobs](Web-Jobs)
-  - [Settings](Web-Settings)
-    - [Drive Management](Web-Settings-Drives)
-    - [UI Settings](Web-Settings-UI)
-    - [System Information](Web-Settings-System-Info)
+**AI & MCP**
+   - [AI Agent](AI-Agent)
+   - [MCP Integration](MCP-Integration)
+   - [API Reference](API-Reference)
 
-**[Known Issues](https://github.com/automatic-ripping-machine/automatic-ripping-machine/wiki/Known-Issues)**
+**Web UI**
+   - [Jobs](Web-Jobs)
+   - [Settings](Web-Settings)
+     - [Drive Management](Web-Settings-Drives)
+     - [UI Settings](Web-Settings-UI)
+     - [System Information](Web-Settings-System-Info)
 
 **Configuration**
    - [Configuration](Configuring-ARM)
@@ -32,13 +30,11 @@
       - [arm.yaml](Config-arm.yaml)
       - [apprise.yaml](Config-apprise.yaml)
       - [.abcde.conf](Config-abcde.conf)
-      - [Skins for ARM ui](Config-ui-skins)
       - [MakeMKV](MakeMKV-Info)
       - [FFmpeg Alternative Transcoder](ffmpeg.md)
-     
-   - **Alternate Installations**
+
+   - **Alternate Installations (Legacy)**
      - [Ubuntu](Alternate-Install-Ubuntu)
-     - ~~[Ubuntu 20.04 (install script)](Ubuntu-20.04-Automatic-Installation)~~ (Run the Debian script)
      - [Ubuntu 25.04](Ubuntu-25.04-Install)
      - [Debian](Alternate-Install-Debian)
      - [Open Media Vault](Alternate-Install-OMV)
@@ -61,13 +57,13 @@
 **ARM Status**
    - [Known Issues](Status-Known-Issues)
    - [Development Path](Status-Roadmap)
+   - [Change Log](Change-Log)
 
 
 **Contributing to ARM**
    - [ARM Code](Contribute)
    - [ARM Wiki](Contribute-Wiki)
    - [Docker Dev guide](Contribute-Docker)
-   - [ARM Development Tools (devtools)](Contribute-DevTools)
 
 
 **How ARM Works**
@@ -75,5 +71,4 @@
    - **More Info**
       - [Related Projects and HowTos](related-howtos)
       - [Hardware/OS HowTo's](VMware)
-      - [The ARM Change log](Change-Log)
       - [The ARM License](https://github.com/automatic-ripping-machine/automatic-ripping-machine/blob/main/LICENSE)

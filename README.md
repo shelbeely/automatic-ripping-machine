@@ -1,50 +1,50 @@
-# Automatic Ripping Machine (ARM)
-[![CI](https://github.com/automatic-ripping-machine/automatic-ripping-machine/actions/workflows/main.yml/badge.svg)](https://github.com/automatic-ripping-machine/automatic-ripping-machine/actions/workflows/main.yml) [![Publish Docker Image](https://github.com/automatic-ripping-machine/automatic-ripping-machine/actions/workflows/publish-image.yml/badge.svg)](https://github.com/automatic-ripping-machine/automatic-ripping-machine/actions/workflows/publish-image.yml)
-[![Docker](https://img.shields.io/docker/pulls/automaticrippingmachine/automatic-ripping-machine.svg)](https://hub.docker.com/r/automaticrippingmachine/automatic-ripping-machine)
-
-[![GitHub forks](https://img.shields.io/github/forks/automatic-ripping-machine/automatic-ripping-machine)](https://github.com/automatic-ripping-machine/automatic-ripping-machine/network)
-[![GitHub stars](https://img.shields.io/github/stars/automatic-ripping-machine/automatic-ripping-machine)](https://github.com/automatic-ripping-machine/automatic-ripping-machine/stargazers)
-[![GitHub issues](https://img.shields.io/github/issues/automatic-ripping-machine/automatic-ripping-machine)](https://github.com/automatic-ripping-machine/automatic-ripping-machine/issues)
-[![GitHub pull requests](https://img.shields.io/github/issues-pr/automatic-ripping-machine/automatic-ripping-machine)](https://github.com/automatic-ripping-machine/automatic-ripping-machine/pulls)
-[![GitHub contributors](https://img.shields.io/github/contributors/automatic-ripping-machine/automatic-ripping-machine)](https://github.com/automatic-ripping-machine/automatic-ripping-machine/graphs/contributors)
-[![GitHub last commit](https://img.shields.io/github/last-commit/automatic-ripping-machine/automatic-ripping-machine?)](https://github.com/automatic-ripping-machine/automatic-ripping-machine/commits/main)
+# Automatic Ripping Machine (ARM) — AI-First Node.js Fork
 
 [![GitHub license](https://img.shields.io/github/license/automatic-ripping-machine/automatic-ripping-machine)](https://github.com/automatic-ripping-machine/automatic-ripping-machine/blob/main/LICENSE)
 
-[![GitHub release (latest by date)](https://img.shields.io/github/v/release/automatic-ripping-machine/automatic-ripping-machine?label=Latest%20Stable%20Version)](https://github.com/automatic-ripping-machine/automatic-ripping-machine/releases)
-[![GitHub release Date](https://img.shields.io/github/release-date/automatic-ripping-machine/automatic-ripping-machine?label=Latest%20Stable%20Released)](https://github.com/automatic-ripping-machine/automatic-ripping-machine/releases)
-![Python Versions](https://img.shields.io/badge/Python_Versions-3.9_|_3.10_|_3.11_|_3.12-blue?logo=python)
-
-
-
-[![Wiki](https://img.shields.io/badge/Wiki-Get%20Help-brightgreen)](https://github.com/automatic-ripping-machine/automatic-ripping-machine/wiki)
-[![Discord](https://img.shields.io/discord/576479573886107699)](https://discord.gg/FUSrn8jUcR)
-
-
-
 ## Overview
 
-Insert an optical disc (Blu-ray, DVD, CD) and checks to see if it's audio, video (Movie or TV), or data, then rips it.
+Insert an optical disc (Blu-ray, DVD, CD) and ARM checks if it's audio, video (Movie or TV), or data, then rips it. This fork replaces the original Python codebase with a Node.js AI-first architecture.
 
-See: https://b3n.org/automatic-ripping-machine
+See: https://b3n.org/automatic-ripping-machine for the original project's history.
 
+## Node.js AI-First Architecture
+
+This fork is a complete rewrite with AI as a core requirement — not optional. See [`node/README.md`](node/README.md) for full technical details.
+
+**Key additions:**
+- **AI-powered pipeline** — disc identification, transcode optimization, error diagnosis, and file naming all driven by OpenAI-compatible LLM
+- **MCP support** — ARM is both an [MCP](https://modelcontextprotocol.io) server (web UI and external apps interact with it) and MCP client (ARM uses external MCP tool servers)
+- **Node.js/Express** — modern JavaScript stack with Express, Knex, better-sqlite3, EJS views
+
+## Quick Start
+
+```bash
+cd node && npm install
+export ARM_AI_API_KEY=sk-your-key
+npm run start:ui
+# Visit http://localhost:8080
+```
 
 ## Features
 
 - Detects insertion of disc using udev
 - Determines disc type...
   - If video (Blu-ray or DVD)
-    - Retrieve title from disc or [OMDb API](http://www.omdbapi.com/) to name the folder "Movie Title (Year)" so that Plex or Emby can pick it up
-    - Determine if video is Movie or TV using [OMDb API](http://www.omdbapi.com/)
+    - **AI-powered** title identification from disc labels, with [OMDb API](http://www.omdbapi.com/) and TMDB fallback
+    - **AI-optimized** transcode settings based on source video analysis
     - Rip using MakeMKV or HandBrake (can rip all features or main feature)
-    - Eject disc and queue up Handbrake transcoding when done
-    - Transcoding jobs are asynchronously batched from ripping
-    - Send notifications via IFTTT, Pushbullet, Slack, Discord, and many more!
-  - If audio (CD) - rip using abcde (get disc-data and album art from [musicbrainz](https://musicbrainz.org/))
+    - **AI-generated** Plex/Emby/Jellyfin-compatible filenames and directories
+    - **AI error diagnosis** with actionable fix suggestions when rips fail
+    - Send notifications via IFTTT, Pushbullet, Pushover, JSON webhooks, and more
+  - If audio (CD) - rip using abcde (get disc-data and album art from [MusicBrainz](https://musicbrainz.org/))
   - If data (Blu-ray, DVD, DVD-Audio or CD) - make an ISO backup
+- **MCP server** — web UI and external apps interact with ARM via Model Context Protocol
+- **MCP client** — ARM can use external MCP tool servers (media databases, file organizers, etc.)
 - Headless, designed to be run from a server
-- Can rip from multiple-optical drives in parallel
-- Python Flask UI to interact with ripping jobs, view logs, update jobs, etc
+- Can rip from multiple optical drives in parallel
+- Node.js Express web UI to interact with ripping jobs, view logs, manage AI tools and MCP apps
+- Intel QuickSync, NVIDIA NVENC, and AMD VCE hardware acceleration support
 
 
 
@@ -57,27 +57,33 @@ See: https://b3n.org/automatic-ripping-machine
 
 ## Requirements
 
-- A system capable of running Docker containers
+- Node.js 18+ (LTS recommended)
 - One or more optical drives to rip Blu-rays, DVDs, and CDs
-- Lots of drive space (I suggest using a NAS) to store your movies
-
+- An OpenAI-compatible API key (see [AI Agent](https://github.com/shelbeely/automatic-ripping-machine/wiki/AI-Agent))
+- Lots of drive space (a NAS is recommended) to store your media
 
 ## Install
 
-[For normal installation please see the wiki](https://github.com/automatic-ripping-machine/automatic-ripping-machine/wiki/).
+- **Node.js (recommended)**: See the [Node.js Installation Guide](https://github.com/shelbeely/automatic-ripping-machine/wiki/Node-Installation)
+- **Docker**: See the [Docker guide](https://github.com/shelbeely/automatic-ripping-machine/wiki/docker)
+- **Getting Started**: See the [wiki](https://github.com/shelbeely/automatic-ripping-machine/wiki/)
 
-[For docker installation please see here](https://github.com/automatic-ripping-machine/automatic-ripping-machine/wiki/docker).
+## Documentation
 
-[For WSL Integration please see here]()
+- [Wiki Home](https://github.com/shelbeely/automatic-ripping-machine/wiki/) — Full documentation
+- [AI Agent](https://github.com/shelbeely/automatic-ripping-machine/wiki/AI-Agent) — AI setup and capabilities
+- [MCP Integration](https://github.com/shelbeely/automatic-ripping-machine/wiki/MCP-Integration) — MCP server and client
+- [API Reference](https://github.com/shelbeely/automatic-ripping-machine/wiki/API-Reference) — REST API documentation
+- [Configuration](https://github.com/shelbeely/automatic-ripping-machine/wiki/Configuring-ARM) — Configuration reference
 
 ## Troubleshooting
- [Please see the wiki for troubleshooting](https://github.com/automatic-ripping-machine/automatic-ripping-machine/wiki/).
+ [Please see the wiki for troubleshooting](https://github.com/shelbeely/automatic-ripping-machine/wiki/).
 
 ## Contributing
 
-Pull requests are welcome.  Please see the [Contributing Guide](https://github.com/automatic-ripping-machine/automatic-ripping-machine/wiki/Contributing-Guide)
+Pull requests are welcome. Please see the [Contributing Guide](CONTRIBUTING.md).
 
-If you set ARM up in a different environment (hardware/OS/virtual/etc.), please consider [submitting a howto to the wiki](https://github.com/automatic-ripping-machine/automatic-ripping-machine/wiki).
+If you set ARM up in a different environment (hardware/OS/virtual/etc.), please consider [submitting a howto to the wiki](https://github.com/shelbeely/automatic-ripping-machine/wiki).
 
 ## License
 

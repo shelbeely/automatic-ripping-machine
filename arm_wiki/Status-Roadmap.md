@@ -2,29 +2,41 @@
 
 ## Overview
 The ARM development roadmap outlines the key features, enhancements, and milestones planned for the project.
-The aim of this page is to provide some information around where the developers are focusing effort and time to upgrade ARM.
 
 ---
 
-## v2.x Goals and Objectives
-ARM version 2.x is the current released codebase.
-The goals and objectives for any v2.x software is:
+## v3.x — Node.js AI-First Fork (Current)
 
-1. Maintain the software, resolving any bugs
-2. Resolve any security issues as they arise
-3. Implement small features as requested by the community
+The v3.x release is a complete rewrite from Python/Flask to Node.js/Express with AI as a core requirement.
+
+### Completed
+- ✅ Node.js runtime with Express 5, Knex + better-sqlite3, EJS templates
+- ✅ AI-powered disc identification, transcode optimization, error diagnosis, file naming
+- ✅ MCP server — ARM exposes tools and resources via Model Context Protocol
+- ✅ MCP client — ARM connects to external MCP tool servers
+- ✅ Jest test suite with 145+ tests
+- ✅ Web UI with AI Tools dashboard
+- ✅ Session-based authentication
+- ✅ Rate-limited API endpoints
+
+### Planned
+1. Docker image for the Node.js version
+2. Enhanced MCP app ecosystem (more tool servers)
+3. AI-powered TV series episode detection and naming
+4. Streaming progress updates via WebSocket
+5. Multi-user support with role-based permissions
+6. Plugin system for custom ripping workflows
 
 ---
 
-## v3.x Goals and Objectives
-The primary goals and objectives of the ARM development roadmap are:
+## Legacy Roadmap (Python v2.x)
 
-1. Improve system performance and stability
-   1. Rewrite of ARM Ripper Code
-   2. Rewrite of ARM UI code
-2. Move from docker to docker-compose
-3. Move the database from SQLite to MySQL
-4. Implementation of Sessions
+The following roadmap items were planned for the Python version. Some have been addressed differently in the Node.js rewrite.
+
+### v2.x Goals (Maintenance Only)
+1. ~~Maintain the software, resolving any bugs~~ → Superseded by v3.x
+2. ~~Resolve any security issues~~ → Superseded by v3.x
+3. ~~Implement small features~~ → Superseded by v3.x
 
 ---
 
