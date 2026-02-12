@@ -17,6 +17,8 @@ const apiLimiter = rateLimit({
 });
 router.use(apiLimiter);
 
+const DEFAULT_DISC_TYPE = 'dvd';
+
 function percentage(part, whole) {
   if (!whole) return 0;
   return Math.round((100 * part) / whole);
@@ -212,7 +214,7 @@ router.post('/ai/transcode', async (req, res) => {
         error: 'AI agent not configured. Set AI_API_KEY in configuration or ARM_AI_API_KEY environment variable.',
       });
     }
-    const job = { disctype: disctype || 'dvd', config };
+    const job = { disctype: disctype || DEFAULT_DISC_TYPE, config };
     const result = await recommendTranscodeSettings(agent, videoInfo || {}, job);
     if (result) {
       res.json({ success: true, result });
@@ -241,7 +243,7 @@ router.post('/ai/filename', async (req, res) => {
         error: 'AI agent not configured. Set AI_API_KEY in configuration or ARM_AI_API_KEY environment variable.',
       });
     }
-    const job = { title, year, video_type: videoType, label, disctype: disctype || 'dvd', config };
+    const job = { title, year, video_type: videoType, label, disctype: disctype || DEFAULT_DISC_TYPE, config };
     const result = await generateMediaFilename(agent, job, trackInfo || {});
     if (result) {
       res.json({ success: true, result });

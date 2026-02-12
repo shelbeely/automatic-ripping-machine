@@ -78,7 +78,7 @@ async function startTranscode(job, logfile, rawInPath, transcodeOutPath, protect
       }
       const recommendation = await recommendTranscodeSettings(agent, videoInfo, job);
       if (recommendation) {
-        logger.info(`AI transcode recommendation: preset=${recommendation.preset}, quality=${recommendation.quality}, reasoning=${recommendation.reasoning}`);
+        logger.info(`AI transcode recommendation: preset=${recommendation.preset || 'N/A'}, quality=${recommendation.quality || 'N/A'}, reasoning=${recommendation.reasoning || 'N/A'}`);
         job.ai_transcode_recommendation = recommendation;
       }
     } catch (err) {
