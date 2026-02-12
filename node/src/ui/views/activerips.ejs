@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ARM - Active Rips</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body>
+  <%- include('nav') %>
+  <div class="container-fluid mt-3">
+    <h3>Active Rips</h3>
+    <% if (typeof jobs !== 'undefined' && jobs.length > 0) { %>
+      <table class="table table-striped">
+        <thead>
+          <tr><th>ID</th><th>Title</th><th>Type</th><th>Status</th><th>Progress</th><th>ETA</th><th>Started</th><th>Actions</th></tr>
+        </thead>
+        <tbody>
+          <% jobs.forEach(function(job) { %>
+            <tr>
+              <td><a href="/jobdetail?job_id=<%= job.job_id %>"><%= job.job_id %></a></td>
+              <td><%= job.title || 'Unknown' %></td>
+              <td><%= job.disctype %></td>
+              <td><span class="badge bg-primary"><%= job.status %></span></td>
+              <td><%= job.progress || 'N/A' %></td>
+              <td><%= job.eta || 'N/A' %></td>
+              <td><%= new Date(job.start_time).toLocaleString() %></td>
+              <td><a href="/jobdetail?job_id=<%= job.job_id %>" class="btn btn-sm btn-outline-primary">Details</a></td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    <% } else { %>
+      <div class="alert alert-info">No active rips at this time.</div>
+    <% } %>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
