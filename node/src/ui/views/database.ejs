@@ -18,7 +18,7 @@
           <h6>Tables</h6>
           <% if (typeof tables !== 'undefined') { %>
             <% tables.forEach(function(t) { %>
-              <a href="/database?table=<%= t.name %>" class="row padding wave" style="text-decoration:none;<%= (typeof selectedTable !== 'undefined' && selectedTable === t.name) ? 'background:var(--primary);color:var(--on-primary);border-radius:0.5rem;' : '' %>">
+              <a href="/database?table=<%= t.name %>" class="row padding wave" style="text-decoration:none;<%= (typeof selectedTable !== 'undefined' && selectedTable === t.name) ? 'background:var(--md-sys-color-primary);color:var(--md-sys-color-on-primary);border-radius:0.5rem;' : '' %>">
                 <div class="max"><%= t.name %></div>
                 <span class="chip small"><%= t.count %></span>
               </a>

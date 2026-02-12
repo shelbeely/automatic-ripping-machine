@@ -133,7 +133,7 @@
         .catch(function(e) { alert('Error: ' + e.message); });
     }
 
-    document.getElementById('settingsForm').addEventListener('submit', function(e) {
+    document.getElementById('settingsForm')?.addEventListener('submit', function(e) {
       e.preventDefault();
       var formData = {};
       var inputs = this.querySelectorAll('input, select');
