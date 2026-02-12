@@ -365,6 +365,35 @@ async function generateMediaFilename(agent, job, trackInfo = {}) {
   return parseAIResponse(response);
 }
 
+/**
+ * AI Agent: Fetch structured credits and metadata for a movie or TV show.
+ *
+ * Returns detailed information suitable for embedding into MKV files,
+ * including cast, crew roles, synopsis, genre, ratings, and more.
+ * MKV supports rich XML-style tagging for all of these fields.
+ */
+async function fetchMediaCredits(agent, title, year, videoType) {
+  if (!agent || !title) return null;
+
+  const context = [`Title: ${title}`];
+  if (year) context.push(`Year: ${year}`);
+  if (videoType) context.push(`Type: ${videoType}`);
+
+  const messages = [
+    {
+      role: 'system',
+      content: 'You are a film and television metadata expert. You provide accurate, structured credits and metadata for movies and TV shows. Respond ONLY with valid JSON, no markdown formatting.',
+    },
+    {
+      role: 'user',
+      content: `Provide detailed credits and metadata for this media:\n\n${context.join('\n')}\n\nRespond with ONLY a JSON object (no code fences) with these fields:\n- "title": official title\n- "original_title": original language title if different, otherwise same as title\n- "year": release year\n- "genre": array of genre strings\n- "synopsis": plot synopsis (2-3 sentences)\n- "tagline": movie tagline if known, otherwise empty string\n- "release_date": release date in YYYY-MM-DD format if known\n- "language": primary language\n- "country": country of production\n- "rating": age rating (e.g. "PG-13", "R")\n- "studio": production company\n- "director": array of director names\n- "producer": array of producer names\n- "writer": array of writer/screenplay names\n- "cast": array of objects with "actor" and "character" fields (top 10 cast)\n- "composer": array of composer names\n- "cinematographer": array of cinematographer names\n- "editor": array of editor names\n- "production_designer": array of production designer names\n- "costume_designer": array of costume designer names\n- "confidence": a number 0-1 indicating confidence in the data`,
+    },
+  ];
+
+  const response = await chatCompletion(agent, messages, { maxTokens: 1500 });
+  return parseAIResponse(response);
+}
+
 module.exports = {
   createAgent,
   requireAgent,
@@ -377,6 +406,7 @@ module.exports = {
   recommendTranscodeSettings,
   diagnoseError,
   generateMediaFilename,
+  fetchMediaCredits,
   DEFAULT_API_URL,
   DEFAULT_MODEL,
   MIN_CONFIDENCE_THRESHOLD,

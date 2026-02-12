@@ -72,6 +72,11 @@ describe('MCP Server', () => {
       const result = await handleToolCall('diagnose_error', { errorLog: 'test' }, {});
       expect(result.error).toContain('AI agent not configured');
     });
+
+    test('should return error for fetch_credits without AI agent', async () => {
+      const result = await handleToolCall('fetch_credits', { title: 'Test Movie' }, {});
+      expect(result.error).toContain('AI agent not configured');
+    });
   });
 
   describe('handleResourceRead', () => {
@@ -107,6 +112,7 @@ describe('MCP Server', () => {
       expect(toolNames).toContain('diagnose_error');
       expect(toolNames).toContain('recommend_transcode');
       expect(toolNames).toContain('generate_filename');
+      expect(toolNames).toContain('fetch_credits');
       expect(toolNames).toContain('get_system_info');
     });
 
@@ -115,6 +121,12 @@ describe('MCP Server', () => {
         expect(tool.inputSchema).toBeDefined();
         expect(tool.inputSchema.type).toBe('object');
       }
+    });
+
+    test('fetch_credits tool should require title', () => {
+      const tool = TOOLS.find((t) => t.name === 'fetch_credits');
+      expect(tool).toBeDefined();
+      expect(tool.inputSchema.required).toContain('title');
     });
   });
 

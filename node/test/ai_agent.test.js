@@ -7,6 +7,7 @@ const {
   resolveAmbiguousResults,
   identifyUnknownDisc,
   enhanceIdentification,
+  fetchMediaCredits,
   DEFAULT_API_URL,
   DEFAULT_MODEL,
   MIN_CONFIDENCE_THRESHOLD,
@@ -628,6 +629,112 @@ describe('AI Agent', () => {
       const agent = { apiKey: 'key', apiUrl: DEFAULT_API_URL, model: DEFAULT_MODEL };
       const result = await generateMediaFilename(agent, { title: 'Test' });
       expect(result).toBeNull();
+    });
+  });
+
+  describe('fetchMediaCredits', () => {
+    test('should return null when agent is null', async () => {
+      const result = await fetchMediaCredits(null, 'Test Movie');
+      expect(result).toBeNull();
+    });
+
+    test('should return null when title is empty', async () => {
+      const agent = { apiKey: 'key', apiUrl: DEFAULT_API_URL, model: DEFAULT_MODEL };
+      const result = await fetchMediaCredits(agent, '');
+      expect(result).toBeNull();
+    });
+
+    test('should fetch credits for a movie', async () => {
+      const mockResponse = JSON.stringify({
+        title: 'The Dark Knight',
+        original_title: 'The Dark Knight',
+        year: '2008',
+        genre: ['Action', 'Crime', 'Drama'],
+        synopsis: 'When the menace known as the Joker wreaks havoc on Gotham, Batman must face one of the greatest tests.',
+        tagline: 'Why So Serious?',
+        release_date: '2008-07-18',
+        language: 'English',
+        country: 'United States',
+        rating: 'PG-13',
+        studio: 'Warner Bros.',
+        director: ['Christopher Nolan'],
+        producer: ['Christopher Nolan', 'Emma Thomas', 'Charles Roven'],
+        writer: ['Jonathan Nolan', 'Christopher Nolan'],
+        cast: [
+          { actor: 'Christian Bale', character: 'Bruce Wayne / Batman' },
+          { actor: 'Heath Ledger', character: 'The Joker' },
+        ],
+        composer: ['Hans Zimmer', 'James Newton Howard'],
+        cinematographer: ['Wally Pfister'],
+        editor: ['Lee Smith'],
+        production_designer: ['Nathan Crowley'],
+        costume_designer: ['Lindy Hemming'],
+        confidence: 0.95,
+      });
+
+      axios.post.mockResolvedValueOnce({
+        data: { choices: [{ message: { content: mockResponse } }] },
+      });
+
+      const agent = { apiKey: 'key', apiUrl: DEFAULT_API_URL, model: DEFAULT_MODEL };
+      const result = await fetchMediaCredits(agent, 'The Dark Knight', '2008', 'movie');
+
+      expect(result).not.toBeNull();
+      expect(result.title).toBe('The Dark Knight');
+      expect(result.director).toContain('Christopher Nolan');
+      expect(result.cast).toHaveLength(2);
+      expect(result.cast[0].actor).toBe('Christian Bale');
+      expect(result.cast[0].character).toBe('Bruce Wayne / Batman');
+      expect(result.genre).toContain('Action');
+      expect(result.composer).toContain('Hans Zimmer');
+      expect(result.confidence).toBe(0.95);
+    });
+
+    test('should handle credits without year', async () => {
+      const mockResponse = JSON.stringify({
+        title: 'Inception',
+        year: '2010',
+        genre: ['Sci-Fi'],
+        director: ['Christopher Nolan'],
+        cast: [{ actor: 'Leonardo DiCaprio', character: 'Cobb' }],
+        confidence: 0.9,
+      });
+
+      axios.post.mockResolvedValueOnce({
+        data: { choices: [{ message: { content: mockResponse } }] },
+      });
+
+      const agent = { apiKey: 'key', apiUrl: DEFAULT_API_URL, model: DEFAULT_MODEL };
+      const result = await fetchMediaCredits(agent, 'Inception');
+
+      expect(result).not.toBeNull();
+      expect(result.title).toBe('Inception');
+      expect(result.director).toContain('Christopher Nolan');
+    });
+
+    test('should return null on API error', async () => {
+      axios.post.mockRejectedValueOnce(new Error('API error'));
+
+      const agent = { apiKey: 'key', apiUrl: DEFAULT_API_URL, model: DEFAULT_MODEL };
+      const result = await fetchMediaCredits(agent, 'Test Movie', '2024');
+      expect(result).toBeNull();
+    });
+
+    test('should use higher maxTokens for credits', async () => {
+      const mockResponse = JSON.stringify({
+        title: 'Test',
+        confidence: 0.9,
+      });
+
+      axios.post.mockResolvedValueOnce({
+        data: { choices: [{ message: { content: mockResponse } }] },
+      });
+
+      const agent = { apiKey: 'key', apiUrl: DEFAULT_API_URL, model: DEFAULT_MODEL };
+      await fetchMediaCredits(agent, 'Test Movie', '2024', 'movie');
+
+      const callArgs = axios.post.mock.calls[axios.post.mock.calls.length - 1];
+      expect(callArgs[1].max_tokens).toBe(1500);
     });
   });
 });

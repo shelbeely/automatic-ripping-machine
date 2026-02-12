@@ -232,6 +232,28 @@ router.post('/ai/filename', async (req, res) => {
   }
 });
 
+// AI Agent: fetch structured credits and metadata
+router.post('/ai/credits', async (req, res) => {
+  try {
+    const { title, year, videoType } = req.body;
+    if (!title) {
+      return res.status(400).json({ success: false, error: 'title is required' });
+    }
+    const { loadConfig } = require('../config/config');
+    const { requireAgent, fetchMediaCredits } = require('../ripper/ai_agent');
+    const config = loadConfig();
+    const agent = requireAgent(config);
+    const result = await fetchMediaCredits(agent, title, year, videoType);
+    if (result) {
+      res.json({ success: true, result });
+    } else {
+      res.json({ success: false, error: 'AI could not fetch credits' });
+    }
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 // MCP Apps: list all tools from connected MCP apps
 router.get('/mcp/tools', (req, res) => {
   try {
