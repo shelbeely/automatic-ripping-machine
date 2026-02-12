@@ -10,7 +10,7 @@ in `arm/` is legacy and should not be modified.
 
 - **Runtime**: Node.js (CommonJS modules via `require()`)
 - **Web framework**: Express 5 with EJS templates
-- **UI framework**: Material Web (@material/web v2.4.0) via CDN import maps + custom MD3 CSS
+- **UI framework**: Hybrid MDC-Web v14.0.0 (MD2) + Material Web v2.4.0 (MD3) via CDN
 - **Icons**: Material Icons Outlined via Google Fonts CDN
 - **Database**: SQLite via Knex query builder + better-sqlite3
 - **Testing**: Jest with `--forceExit` flag (205 tests, 13 suites)
@@ -18,60 +18,82 @@ in `arm/` is legacy and should not be modified.
 - **MCP**: Model Context Protocol — ARM is both an MCP server and client
 - **Metadata**: MKV tagging via mkvpropedit, OMDB via MCP client
 
-### Material Web UI
+### Hybrid MDC-Web + Material Web UI
 
-ARM uses Google's Material Web (@material/web v2.4.0) via CDN import maps, plus custom
-CSS classes for components Material Web doesn't provide (tables, cards, navigation, alerts).
+ARM uses a hybrid approach combining two official Google Material libraries:
 
-All views follow this pattern:
+1. **MDC-Web v14.0.0 (Material Design 2)** — for components Material Web doesn't provide:
+   - Data tables (`mdc-data-table`)
+   - Navigation drawer (`mdc-drawer--dismissible`)
+   - Top app bar (`mdc-top-app-bar--fixed`)
+   - List items (`mdc-list`, `mdc-list-item`)
+   - Reference: https://github.com/material-components/material-components-web
+
+2. **Material Web v2.4.0 (@material/web, Material Design 3)** — for interactive form components:
+   - Buttons: `<md-filled-button>`, `<md-outlined-button>`, `<md-filled-tonal-button>`
+   - Text fields: `<md-outlined-text-field label="Name" id="x" name="x">`
+   - Selects: `<md-outlined-select>` with `<md-select-option value="x"><div slot="headline">X</div></md-select-option>`
+   - Switches: `<md-switch id="x" name="x" selected>` (uses `selected` not `checked`)
+   - Dividers: `<md-divider>`
+   - Reference: https://material-web.dev/
+
+3. **Custom CSS classes** — for components neither library provides:
+   - Cards: `<div class="md3-card">`
+   - Alerts: `<div class="md3-alert info|error|success">`
+   - Status chips: `<span class="status-chip primary|error|success|warning">`
+   - Grid: `<div class="grid"><div class="s12 m6">...</div></div>`
+
+**Why hybrid?** Material Web (@material/web) is in maintenance mode and missing critical
+components (data tables, navigation drawer, top app bar — all listed as "Future" on their
+roadmap but never built). MDC-Web v14.0.0 provides these. MUI requires React (incompatible
+with EJS server-rendering). Angular Material requires Angular.
+
+All views use a shared `head.ejs` partial and follow this pattern:
 ```html
-<!-- Head: Roboto font + Material Icons + custom theme + import map -->
-<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
-<link rel="stylesheet" href="/static/css/style.css">
-<script type="importmap">
-{
-  "imports": {
-    "@material/web/": "https://esm.run/@material/web@2.4.0/"
-  }
-}
-</script>
-<script type="module">
-  import '@material/web/all.js';
-  import {styles as typescaleStyles} from '@material/web/typography/md-typescale-styles.js';
-  document.adoptedStyleSheets.push(typescaleStyles.styleSheet);
-</script>
-
-<!-- Body: dark mode, nav include, page wrapper -->
+<head>
+  <title>Page Title</title>
+  <%- include('head') %>  <!-- loads MDC-Web CSS/JS, Material Web import map, theme CSS -->
+</head>
 <body class="dark">
-  <%- include('nav') %>
+  <%- include('nav') %>   <!-- MDC drawer + top app bar, opens mdc-drawer-app-content div -->
   <div class="page">
-    <!-- Content here -->
+    <!-- Page content here -->
   </div>
+  </div> <!-- closes mdc-drawer-app-content from nav.ejs -->
+  <script>
+    // MDC drawer + top app bar initialization (required in every view)
+    var drawer = mdc.drawer.MDCDrawer.attachTo(document.querySelector('.mdc-drawer'));
+    var topAppBar = mdc.topAppBar.MDCTopAppBar.attachTo(document.querySelector('.mdc-top-app-bar'));
+    topAppBar.setScrollTarget(document.querySelector('.page'));
+    topAppBar.listen('MDCTopAppBar:nav', function() {
+      drawer.open = !drawer.open;
+    });
+    if (window.innerWidth >= 993) drawer.open = true;
+  </script>
 </body>
 ```
 
-Material Web components used:
-- Buttons: `<md-filled-button>`, `<md-outlined-button>`, `<md-filled-tonal-button>`
-- Text fields: `<md-outlined-text-field label="Name" id="x" name="x">`
-- Selects: `<md-outlined-select>` with `<md-select-option value="x"><div slot="headline">X</div></md-select-option>`
-- Switches: `<md-switch id="x" name="x" selected>` (uses `selected` not `checked`)
-- Dividers: `<md-divider>`
-- Icon buttons: `<md-icon-button>`
+MDC Data Table pattern (replaces all `<table>` elements):
+```html
+<div class="mdc-data-table">
+  <div class="mdc-data-table__table-container">
+    <table class="mdc-data-table__table" aria-label="Description">
+      <thead>
+        <tr class="mdc-data-table__header-row">
+          <th class="mdc-data-table__header-cell" role="columnheader" scope="col">Column</th>
+        </tr>
+      </thead>
+      <tbody class="mdc-data-table__content">
+        <tr class="mdc-data-table__row">
+          <td class="mdc-data-table__cell">Data</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+```
 
-Custom CSS classes (components Material Web doesn't provide):
-- Cards: `<div class="md3-card">`
-- Tables: `<table class="md3-table">`
-- Alerts: `<div class="md3-alert info|error|success">`
-- Status chips: `<span class="status-chip primary|error|success|warning">`
-- Nav drawer: `<nav class="md3-nav-drawer">`
-- App bar: `<header class="md3-app-bar">`
-- Grid: `<div class="grid"><div class="s12 m6">...</div></div>`
-- Icons: `<i class="material-icons-outlined">icon_name</i>`
-
-Do NOT use Bootstrap classes. Material Web + custom MD3 CSS is the only UI framework.
-
-Reference: https://material-web.dev/
+Do NOT use Bootstrap or Beer CSS. The hybrid MDC-Web + Material Web stack is the only UI framework.
 
 ## Key Conventions
 
@@ -113,7 +135,7 @@ node/src/
     identify.js — MCP-based OMDB lookup → direct OMDB API → TMDB fallback
     utils.js    — MKV tagging, file operations
   ui/
-    views/      — 18 EJS templates (Material Web + custom MD3 CSS)
+    views/      — 19 EJS templates (head.ejs shared partial + 16 pages + nav.ejs + layout.ejs)
     public/     — Static assets (css/style.css, js/app.js)
     api.js      — REST API endpoints (/api/*)
     server.js   — Express app factory, route registration
@@ -136,7 +158,9 @@ node/src/
 - Use `@modelcontextprotocol/sdk` for MCP client functionality.
 - Import MCP SDK client: `require('@modelcontextprotocol/sdk/client')`
 - Import MCP SDK stdio: `require('@modelcontextprotocol/sdk/client/stdio.js')`
-- UI framework: Material Web (@material/web v2.4.0) via CDN import maps
+- UI framework: Hybrid MDC-Web v14.0.0 (MD2) + Material Web v2.4.0 (MD3) via CDN
+- MDC-Web: data tables, navigation drawer, top app bar (via unpkg CDN)
+- Material Web: buttons, text fields, switches, selects (via esm.run CDN import maps)
 - Icons: Material Icons Outlined via Google Fonts CDN
 
 ## Common Tasks
@@ -159,12 +183,16 @@ node/src/
 3. Return `{ success: true, ... }` or `{ success: false, error: '...' }`
 
 ### Adding a new web UI page
-1. Create EJS template in `node/src/ui/views/` following Material Web conventions above
-2. Add route handler in `node/src/ui/server.js` or a sub-router module
-3. Add navigation link in `node/src/ui/views/nav.ejs`
-4. Add route test in `node/test/server_routes.test.js`
+1. Create EJS template in `node/src/ui/views/` using `<%- include('head') %>` and `<%- include('nav') %>`
+2. Use MDC data tables for tabular data, Material Web for form components, custom CSS for cards/alerts
+3. Include MDC drawer/top-app-bar init script at bottom of every view
+4. Add route handler in `node/src/ui/server.js` or a sub-router module
+5. Add navigation link in `node/src/ui/views/nav.ejs`
+6. Add route test in `node/test/server_routes.test.js`
 
 ### Modifying the UI theme
-1. Edit `node/src/ui/public/css/style.css` — uses CSS custom properties for MD3 tokens
-2. Key variables: `--md-sys-color-primary`, `--md-sys-color-surface`, etc.
-3. Reference: https://m3.material.io/styles/color/system/overview
+1. Edit `node/src/ui/public/css/style.css` — uses CSS custom properties for both MD3 tokens and MDC theming
+2. MD3 key variables: `--md-sys-color-primary`, `--md-sys-color-surface`, etc.
+3. MDC key variables: `--mdc-theme-primary`, `--mdc-theme-surface`, etc.
+4. Reference: https://m3.material.io/styles/color/system/overview
+5. Reference: https://github.com/material-components/material-components-web/blob/master/docs/theming.md
