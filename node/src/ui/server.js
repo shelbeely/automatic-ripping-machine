@@ -93,6 +93,7 @@ async function createApp(options = {}) {
   const logsRoutes = require('./logs/logs');
   const databaseRoutes = require('./database/database');
   const notificationRoutes = require('./notifications/notifications');
+  const sendmoviesRoutes = require('./sendmovies/sendmovies');
   const apiRoutes = require('./api');
 
   app.use('/', authRoutes);
@@ -102,6 +103,7 @@ async function createApp(options = {}) {
   app.use('/', logsRoutes);
   app.use('/', databaseRoutes);
   app.use('/', notificationRoutes);
+  app.use('/', sendmoviesRoutes);
   app.use('/api', apiRoutes);
 
   // AI Dashboard — shows AI status, capabilities, and interactive testing

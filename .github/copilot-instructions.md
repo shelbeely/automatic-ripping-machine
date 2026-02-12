@@ -13,7 +13,7 @@ in `arm/` is legacy and should not be modified.
 - **UI framework**: Hybrid MDC-Web v14.0.0 (MD2) + Material Web v2.4.0 (MD3) via CDN
 - **Icons**: Material Icons Outlined via Google Fonts CDN
 - **Database**: SQLite via Knex query builder + better-sqlite3
-- **Testing**: Jest with `--forceExit` flag (205 tests, 13 suites)
+- **Testing**: Jest with `--forceExit` flag (207 tests, 13 suites)
 - **AI**: OpenAI-compatible chat completions API (required, not optional)
 - **MCP**: Model Context Protocol — ARM is both an MCP server and client
 - **Metadata**: MKV tagging via mkvpropedit, OMDB via MCP client
@@ -140,14 +140,18 @@ node/src/
     api.js      — REST API endpoints (/api/*)
     server.js   — Express app factory, route registration
     auth/       — Login, logout, password update with bcrypt + rate limiting
+    jobs/       — Job detail, active rips, title update
     settings/   — Config editing, system info, drive management
+    history/    — Completed/failed job history
+    logs/       — Log file viewer
     database/   — Database browser with table viewer
+    notifications/ — Notification management (read, clear)
     sendmovies/ — Completed media file browser
 ```
 
 ### Testing
 - Run tests: `cd node && npx jest --forceExit`
-- 205 tests across 13 test suites
+- 207 tests across 13 test suites
 - Mock `axios` for AI/HTTP tests: `jest.mock('axios')`
 - Use `os.tmpdir()` for test database files
 - Test file naming: `test/<module_name>.test.js`
