@@ -88,14 +88,15 @@
     <% } else if (configs.length === 0) { %>
       <div class="alert alert-info mt-4">
         <h5>No MCP Apps Configured</h5>
-        <p>Add MCP app servers to your <code>arm.yaml</code> configuration to extend ARM with external tools:</p>
+        <p>Add MCP app servers to your <code>arm.yaml</code> configuration to extend ARM with external tools.</p>
+        <p><strong>Example: OMDB Movie Database</strong> (<a href="https://github.com/shelbeely/omdb-mcp-server" target="_blank">omdb-mcp-server</a>)</p>
         <pre><code>MCP_APPS:
-  - name: media-db
+  - name: omdb
     command: npx
-    args: ["-y", "@some/mcp-media-server"]
-  - name: file-organizer
-    command: node
-    args: ["path/to/server.js"]</code></pre>
+    args: ["-y", "omdb-mcp-server"]
+    env:
+      OMDB_API_KEY: "your-omdb-api-key"</code></pre>
+        <p class="mb-0">Get a free OMDB API key at <a href="https://omdbapi.com/apikey.aspx" target="_blank">omdbapi.com</a>.</p>
       </div>
     <% } %>
   </div>

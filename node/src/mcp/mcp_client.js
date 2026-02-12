@@ -59,18 +59,22 @@ function parseMcpAppsConfig(config) {
 /**
  * Connect to a single MCP app server via stdio transport.
  *
- * @param {object} appConfig - { name, command, args }
+ * @param {object} appConfig - { name, command, args, env }
  * @returns {object|null} - { client, transport, tools, name } or null on failure
  */
 async function connectStdioApp(appConfig) {
-  const { name, command, args = [] } = appConfig;
+  const { name, command, args = [], env } = appConfig;
   if (!command) {
     logger.warn(`MCP app "${name}" has no command specified, skipping`);
     return null;
   }
 
   try {
-    const transport = new StdioClientTransport({ command, args });
+    const transportOpts = { command, args };
+    if (env && typeof env === 'object') {
+      transportOpts.env = { ...process.env, ...env };
+    }
+    const transport = new StdioClientTransport(transportOpts);
     const client = new Client({ name: `arm-${name}`, version: '1.0.0' });
     await client.connect(transport);
 

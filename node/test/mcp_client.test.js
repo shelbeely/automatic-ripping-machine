@@ -62,6 +62,26 @@ describe('MCP Client', () => {
       const result = parseMcpAppsConfig(null);
       expect(result).toEqual([]);
     });
+
+    test('should preserve env field in app config', () => {
+      const config = {
+        MCP_APPS: [
+          { name: 'omdb', command: 'npx', args: ['-y', 'omdb-mcp-server'], env: { OMDB_API_KEY: 'test-key' } },
+        ],
+      };
+      const result = parseMcpAppsConfig(config);
+      expect(result).toHaveLength(1);
+      expect(result[0].env).toEqual({ OMDB_API_KEY: 'test-key' });
+    });
+
+    test('should preserve env from environment variable JSON', () => {
+      process.env.ARM_MCP_APPS = JSON.stringify([
+        { name: 'omdb', command: 'npx', args: ['-y', 'omdb-mcp-server'], env: { OMDB_API_KEY: 'env-key' } },
+      ]);
+      const result = parseMcpAppsConfig({});
+      expect(result).toHaveLength(1);
+      expect(result[0].env).toEqual({ OMDB_API_KEY: 'env-key' });
+    });
   });
 
   describe('hasMcpAppsConfigured', () => {

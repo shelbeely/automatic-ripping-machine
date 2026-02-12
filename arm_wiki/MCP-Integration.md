@@ -91,7 +91,7 @@ Configure MCP apps in `arm.yaml`:
 MCP_APPS:
   - name: "media-db"
     command: "npx"
-    args: ["-y", "@some/media-db-mcp-server"]
+    args: ["-y", "@some/mcp-media-server"]
   - name: "file-organizer"
     command: "node"
     args: ["/path/to/organizer-server.js"]
@@ -103,7 +103,7 @@ MCP_APPS:
 Or via environment variable (JSON):
 
 ```bash
-export ARM_MCP_APPS='[{"name":"media-db","command":"npx","args":["-y","@some/media-db-mcp-server"]}]'
+export ARM_MCP_APPS='[{"name":"media-db","command":"npx","args":["-y","@some/mcp-media-server"]}]'
 ```
 
 Each app entry supports:
@@ -113,6 +113,35 @@ Each app entry supports:
 | `name` | string | Display name for the app |
 | `command` | string | Executable to launch the MCP server |
 | `args` | string[] | Command line arguments |
+| `env` | object | Environment variables to pass to the child process |
+
+### OMDB MCP Server
+
+ARM can connect to the [OMDB MCP Server](https://github.com/shelbeely/omdb-mcp-server) for enhanced movie/TV metadata lookup powered by the [Open Movie Database API](https://omdbapi.com/).
+
+**Available tools from OMDB MCP Server:**
+
+| Tool | Description |
+|------|-------------|
+| `search_movies` | Search for movies by title, with optional year and type filters |
+| `get_movie_details` | Get detailed information about a movie by title |
+| `get_movie_by_imdb_id` | Look up a movie by its IMDB ID |
+
+**Setup:**
+
+1. Get a free API key from [omdbapi.com](https://omdbapi.com/apikey.aspx)
+2. Add to your `arm.yaml`:
+
+```yaml
+MCP_APPS:
+  - name: omdb
+    command: npx
+    args: ["-y", "omdb-mcp-server"]
+    env:
+      OMDB_API_KEY: "your-omdb-api-key"
+```
+
+The OMDB MCP server will be automatically launched and connected when ARM starts. Its tools will be available in the MCP Apps page and through the API.
 
 ### How It Works
 
