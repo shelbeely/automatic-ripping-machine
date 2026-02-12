@@ -15,15 +15,13 @@ describe('Logger', () => {
     const logFile = path.join(__dirname, 'test_logger.log');
     const logger = createLogger('file-test', { file: true, filePath: logFile });
     logger.info('test message');
-    // Give winston time to flush
-    setTimeout(() => {
-      try {
-        if (fs.existsSync(logFile)) {
-          fs.unlinkSync(logFile);
-        }
-      } catch (e) {}
-    }, 500);
     expect(logger).toBeDefined();
+    // Clean up synchronously; file may or may not be flushed yet
+    try {
+      if (fs.existsSync(logFile)) {
+        fs.unlinkSync(logFile);
+      }
+    } catch (e) {}
   });
 
   test('should clean up old logs', () => {

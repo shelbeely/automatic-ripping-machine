@@ -1,3 +1,5 @@
+const path = require('path');
+const fs = require('fs');
 const { cleanForFilename, convertJobType, fixJobTitle, findLargestFile } = require('../src/ripper/utils');
 
 describe('Ripper Utils', () => {
@@ -60,6 +62,36 @@ describe('Ripper Utils', () => {
     test('should handle missing title', () => {
       const job = { title: '', year: '2024' };
       expect(fixJobTitle(job)).toBe('unknown (2024)');
+    });
+  });
+
+  describe('findLargestFile', () => {
+    let tmpDir;
+
+    beforeAll(() => {
+      tmpDir = path.join(__dirname, 'tmp_largest');
+      fs.mkdirSync(tmpDir, { recursive: true });
+      fs.writeFileSync(path.join(tmpDir, 'small.txt'), 'a');
+      fs.writeFileSync(path.join(tmpDir, 'large.txt'), 'a'.repeat(1000));
+      fs.writeFileSync(path.join(tmpDir, 'medium.txt'), 'a'.repeat(100));
+    });
+
+    afterAll(() => {
+      fs.rmSync(tmpDir, { recursive: true, force: true });
+    });
+
+    test('should find the largest file', () => {
+      const files = ['small.txt', 'large.txt', 'medium.txt'];
+      expect(findLargestFile(files, tmpDir)).toBe('large.txt');
+    });
+
+    test('should return null for empty list', () => {
+      expect(findLargestFile([], tmpDir)).toBeNull();
+    });
+
+    test('should handle nonexistent files gracefully', () => {
+      const files = ['nonexistent.txt'];
+      expect(findLargestFile(files, tmpDir)).toBeNull();
     });
   });
 });
