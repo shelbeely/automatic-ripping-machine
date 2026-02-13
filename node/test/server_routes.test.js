@@ -130,6 +130,12 @@ describe('Server Routes', () => {
     expect(res.body).toContain('arm-ripping-machine');
     expect(res.body).toContain('identify_disc');
   });
+
+  test('GET /send returns 200 with completed media page', async () => {
+    const res = await request('/send');
+    expect(res.status).toBe(200);
+    expect(res.body).toContain('Completed Media');
+  });
 });
 
 describe('AI Dashboard', () => {
